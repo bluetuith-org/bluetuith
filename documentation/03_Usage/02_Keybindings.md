@@ -1,26 +1,26 @@
 # Device Screen
-| Operation                        | Keybinding                        |
-| -------------------------------- | -----------------------------     |
-| Open the menu                    | <kbd>`Alt`</kbd>+<kbd>`m`</kbd>   |
-| Navigate between menus           | <kbd>`Tab`</kbd>                  |
-| Navigate between devices/options | <kbd>`Up`</kbd>/<kbd>`Down`</kbd> |
-| Toggle adapter power state       | <kbd>`o`</kbd>                    |
-| Toggle discoverable state        | <kbd>`S`</kbd>                    |
-| Toggle pairable state            | <kbd>`P`</kbd>                    |
-| Toggle scan (discovery state)    | <kbd>`s`</kbd>                    |
-| Change adapter                   | <kbd>`a`</kbd>                    |
-| Send files                       | <kbd>`f`</kbd>                    |
-| Connect to network               | <kbd>`n`</kbd>                    |
-| Progress view                    | <kbd>`v`</kbd>                    |
-| Connect to selected device       | <kbd>`c`</kbd>                    |
-| Pair with selected device        | <kbd>`p`</kbd>                    |
-| Trust selected device            | <kbd>`t`</kbd>                    |
-| Show media player                | <kbd>`m`</kbd>                    |
-| Hide media player                | <kbd>`M`</kbd>                    |
-| Show device information          | <kbd>`i`</kbd>                    |
-| Remove device from adapter       | <kbd>`d`</kbd>                    |
-| Cancel operation                 | <kbd>`Ctrl`</kbd>+<kbd>`x`</kbd>  |
-| Quit                             | <kbd>`q`</kbd>                    |
+| Operation                              | Keybinding                        |
+| -------------------------------------- | -----------------------------     |
+| Open the menu                          | <kbd>`Alt`</kbd>+<kbd>`m`</kbd>   |
+| Navigate between menus                 | <kbd>`Tab`</kbd>                  |
+| Navigate between devices/options       | <kbd>`Up`</kbd>/<kbd>`Down`</kbd> |
+| Toggle adapter power state             | <kbd>`o`</kbd>                    |
+| Toggle discoverable state              | <kbd>`S`</kbd>                    |
+| Toggle pairable state                  | <kbd>`P`</kbd>                    |
+| Toggle scan (discovery state)          | <kbd>`s`</kbd>                    |
+| Change adapter                         | <kbd>`a`</kbd>                    |
+| Send files                             | <kbd>`f`</kbd>                    |
+| Connect to network                     | <kbd>`n`</kbd>                    |
+| Progress view                          | <kbd>`v`</kbd>                    |
+| Toggle connection with selected device | <kbd>`c`</kbd>                    |
+| Pair with selected device              | <kbd>`p`</kbd>                    |
+| Trust selected device                  | <kbd>`t`</kbd>                    |
+| Show media player                      | <kbd>`m`</kbd>                    |
+| Hide media player                      | <kbd>`M`</kbd>                    |
+| Show device information                | <kbd>`i`</kbd>                    |
+| Remove device from adapter             | <kbd>`d`</kbd>                    |
+| Cancel operation                       | <kbd>`Ctrl`</kbd>+<kbd>`x`</kbd>  |
+| Quit                                   | <kbd>`q`</kbd>                    |
 
 # File Picker
 | Operation                          | Keybinding                         |
