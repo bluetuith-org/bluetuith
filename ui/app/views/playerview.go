@@ -272,8 +272,7 @@ func (m *mediaPlayer) setup(deviceName string) playerElements {
 	buttons.SetTextColor(theme.GetColor(theme.ThemeText))
 	buttons.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	buttons.SetHighlightedFunc(func(added, _, _ []string) {
-		var ch rune
-		var key tcell.Key
+		var key keybindings.Key
 
 		if added == nil {
 			return
@@ -281,27 +280,29 @@ func (m *mediaPlayer) setup(deviceName string) playerElements {
 
 		switch added[0] {
 		case "play":
-			key, ch = tcell.KeyRune, ' '
+			key = keybindings.KeyPlayerTogglePlay
 
 		case "next":
-			key, ch = tcell.KeyRune, '>'
+			key = keybindings.KeyPlayerNext
 
 		case "prev":
-			key, ch = tcell.KeyRune, '<'
+			key = keybindings.KeyPlayerPrevious
 
 		case "fastforward":
 			buttons.Highlight(added[0])
-			key, ch = tcell.KeyRight, '-'
+			key = keybindings.KeyPlayerSeekForward
 
 		case "rewind":
 			buttons.Highlight(added[0])
-			key, ch = tcell.KeyLeft, '-'
+			key = keybindings.KeyPlayerSeekBackward
 
 		default:
 			return
 		}
 
-		m.keyEvents(tcell.NewEventKey(key, ch, tcell.ModNone), true)
+		keyData := m.kb.Data(key)
+
+		m.keyEvents(tcell.NewEventKey(keyData.Kb.Key, keyData.Kb.Rune, keyData.Kb.Mod), true)
 	})
 
 	buttonFlex := tview.NewFlex().
