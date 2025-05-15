@@ -38,7 +38,7 @@ func (d *deviceView) Initialize() error {
 			return event
 		}
 
-		d.player.keyEvents(event, false)
+		d.player.keyEvents(event)
 
 		d.menu.inputHandler(event)
 
