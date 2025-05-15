@@ -251,7 +251,7 @@ func (v *viewActions) scan(set ...string) bool {
 
 // changeAdapter launches a popup with the adapters list.
 func (v *viewActions) changeAdapter(_ ...string) bool {
-	v.rv.app.InstantDraw(func() {
+	v.rv.app.QueueDraw(func() {
 		v.rv.adapter.change()
 	})
 
@@ -260,7 +260,7 @@ func (v *viewActions) changeAdapter(_ ...string) bool {
 
 // progress displays the progress view.
 func (v *viewActions) progress(_ ...string) bool {
-	v.rv.app.InstantDraw(func() {
+	v.rv.app.QueueDraw(func() {
 		v.rv.progress.show()
 	})
 
@@ -565,7 +565,7 @@ func (v *viewActions) send(_ ...string) bool {
 
 // networkAP launches a popup with the available networks.
 func (v *viewActions) networkAP(_ ...string) bool {
-	v.rv.app.InstantDraw(func() {
+	v.rv.app.QueueDraw(func() {
 		v.rv.network.networkSelect()
 	})
 
@@ -574,7 +574,7 @@ func (v *viewActions) networkAP(_ ...string) bool {
 
 // profiles launches a popup with the available audio profiles.
 func (v *viewActions) profiles(_ ...string) bool {
-	v.rv.app.InstantDraw(func() {
+	v.rv.app.QueueDraw(func() {
 		v.rv.audioProfiles.audioProfiles()
 	})
 
@@ -597,7 +597,7 @@ func (v *viewActions) hideplayer(_ ...string) bool {
 
 // info retreives the selected device, and shows the device information.
 func (v *viewActions) info(_ ...string) bool {
-	v.rv.app.InstantDraw(func() {
+	v.rv.app.QueueDraw(func() {
 		v.rv.device.showDetailedInfo()
 	})
 

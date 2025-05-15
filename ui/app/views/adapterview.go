@@ -289,13 +289,13 @@ func (a *adapterView) event() {
 		switch adapterEvent.Action {
 		case bluetooth.EventActionUpdated:
 			if adapterEvent.Data.Address == a.currentAdapter.Load().Address {
-				go a.app.InstantDraw(func() {
+				go a.app.QueueDraw(func() {
 					a.updateTopStatus()
 				})
 			}
 
 		case bluetooth.EventActionAdded:
-			go a.app.InstantDraw(func() {
+			go a.app.QueueDraw(func() {
 				a.change()
 
 				if adapterEvent.Data.Address == a.currentAdapter.Load().Address {
@@ -308,7 +308,7 @@ func (a *adapterView) event() {
 		case bluetooth.EventActionRemoved:
 			a.selectAdapter()
 
-			go a.app.InstantDraw(func() {
+			go a.app.QueueDraw(func() {
 				a.updateTopStatus()
 				a.change()
 			})

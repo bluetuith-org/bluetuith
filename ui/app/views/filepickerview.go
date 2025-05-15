@@ -88,7 +88,7 @@ func (f *filePickerView) Show() ([]string, error) {
 	}
 
 	f.reset()
-	f.app.InstantDraw(func() {
+	f.app.QueueDraw(func() {
 		f.pages.AddAndSwitchToPage(filePickerPage.String(), f.pickerFlex, true)
 		go f.changeDir(false, false)
 	})
@@ -279,7 +279,7 @@ func (f *filePickerView) changeDir(cdFwd bool, cdBack bool) {
 
 // createDirList displays the contents of the directory in the f.
 func (f *filePickerView) createDirList(dlist []fs.DirEntry, cdBack bool) {
-	f.app.InstantDraw(func() {
+	f.app.QueueDraw(func() {
 		var pos int
 
 		prevrow := -1

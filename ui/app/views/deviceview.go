@@ -205,7 +205,7 @@ func (d *deviceView) getSelection(lock bool) bluetooth.DeviceData {
 	}
 
 	if lock {
-		d.app.InstantDraw(func() {
+		d.app.QueueDraw(func() {
 			getdevice()
 		})
 
@@ -378,7 +378,7 @@ func (d *deviceView) event() {
 	for deviceEvent := range deviceSub.C {
 		switch deviceEvent.Action {
 		case bluetooth.EventActionUpdated:
-			go d.app.InstantDraw(func() {
+			go d.app.QueueDraw(func() {
 				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
 				if ok {
 					d.setPropertyInfo(row, deviceEvent.Data, true)
@@ -396,7 +396,7 @@ func (d *deviceView) event() {
 				return
 			}
 
-			go d.app.InstantDraw(func() {
+			go d.app.QueueDraw(func() {
 				deviceRow := d.table.GetRowCount()
 
 				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
@@ -408,7 +408,7 @@ func (d *deviceView) event() {
 			})
 
 		case bluetooth.EventActionRemoved:
-			go d.app.InstantDraw(func() {
+			go d.app.QueueDraw(func() {
 				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
 				if ok {
 					d.table.RemoveRow(row)

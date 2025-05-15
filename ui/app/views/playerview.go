@@ -166,11 +166,11 @@ func (m *mediaPlayer) updateLoop(deviceName string) {
 	}
 	defer mediaSub.Unsubscribe()
 
-	elements := m.setup(deviceName)
-	m.app.InstantDraw(func() {
+	elements := m.setup(device.Name)
+	go m.app.QueueDraw(func() {
 		m.help.swapStatusHelp(elements.player, true)
 	})
-	defer m.app.InstantDraw(func() {
+	defer m.app.QueueDraw(func() {
 		m.help.swapStatusHelp(elements.player, false)
 	})
 
@@ -221,6 +221,12 @@ PlayerLoop:
 			t.Reset(1 * time.Second)
 
 		case <-t.C:
+			if cachedMediaData.Status == bluetooth.MediaPlaying {
+				cachedMediaData.Position = cachedMediaData.Position + 1000
+				m.app.QueueDraw(func() {
+					m.renderProgress(elements.progress, cachedMediaData.MediaData)
+				})
+			}
 		}
 	}
 }

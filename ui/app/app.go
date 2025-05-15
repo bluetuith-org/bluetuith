@@ -2,6 +2,7 @@ package app
 
 import (
 	"syscall"
+	"time"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
@@ -39,6 +40,13 @@ func (a *Application) Start(session bluetooth.Session, featureSet *appfeatures.F
 	binder.SetInputCapture(appview.InputCapture)
 	binder.SetMouseCapture(appview.MouseFunc)
 	binder.SetBeforeDrawFunc(appview.BeforeDrawFunc)
+
+	go func() {
+		for {
+			binder.Refresh()
+			time.Sleep(250 * time.Millisecond)
+		}
+	}()
 
 	return binder.SetRoot(appview.Layout, true).SetFocus(appview.InitialFocus).EnableMouse(true).Run()
 }
