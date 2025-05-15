@@ -125,7 +125,7 @@ func (m *menuBarView) toggleItemByKey(menuKey keybindings.Key, toggle bool) {
 		return
 	}
 
-	m.app.InstantDraw(func() {
+	m.app.QueueDraw(func() {
 		highlighted := m.bar.GetHighlights()
 
 		if m.modal.isOpen && highlighted != nil && highlighted[0] == name {

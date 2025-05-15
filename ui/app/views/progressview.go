@@ -3,10 +3,10 @@ package views
 import (
 	"errors"
 	"fmt"
+	"go.uber.org/atomic"
 	"os"
 	"path/filepath"
 	"strconv"
-	"go.uber.org/atomic"
 	"time"
 
 	"slices"
@@ -181,7 +181,7 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 
 	progress.recv = recv
 	progress.deviceAddress = props.Address
-	progress.appDrawFunc = p.app.InstantDraw
+	progress.appDrawFunc = p.app.QueueDraw
 
 	progress.desc = tview.NewTableCell(title).
 		SetExpansion(1).
@@ -205,7 +205,7 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 		progressbar.OptionThrottle(200*time.Millisecond),
 	)
 
-	p.app.InstantDraw(func() {
+	p.app.QueueDraw(func() {
 		p.show()
 		p.showStatus()
 
@@ -316,7 +316,7 @@ func (p *progressView) cancelTransfer() {
 func (p *progressView) removeProgress(transferProps bluetooth.FileTransferEventData, isComplete bool, path ...string) {
 	p.total.Add(^uint32(0))
 
-	p.app.InstantDraw(func() {
+	p.app.QueueDraw(func() {
 		for row := range p.view.GetRowCount() {
 			cell := p.view.GetCell(row, 0)
 			if cell == nil {

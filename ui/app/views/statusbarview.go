@@ -103,7 +103,7 @@ func (s *statusBarView) waitForInput(ctx context.Context, label string, multicha
 			exited <- struct{}{}
 		}
 
-		s.app.InstantDraw(func() {
+		s.app.QueueDraw(func() {
 			s.InputField.SetText("")
 			s.InputField.SetLabel("[::b]" + label + " ")
 
@@ -140,7 +140,7 @@ func (s *statusBarView) waitForInput(ctx context.Context, label string, multicha
 
 		select {
 		case <-ctx.Done():
-			s.app.InstantDraw(func() {
+			s.app.QueueDraw(func() {
 				s.InputField.SetText("")
 				exit()
 			})
@@ -214,7 +214,7 @@ func (s *statusBarView) startStatus() {
 				text = ""
 			}
 
-			s.app.InstantDraw(func() {
+			s.app.QueueDraw(func() {
 				s.MessageBox.SetText(msg.text)
 			})
 
@@ -225,7 +225,7 @@ func (s *statusBarView) startStatus() {
 
 			cleared = true
 
-			s.app.InstantDraw(func() {
+			s.app.QueueDraw(func() {
 				s.MessageBox.SetText(text)
 			})
 		}

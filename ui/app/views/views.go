@@ -44,7 +44,7 @@ type viewInitializer interface {
 	SetRootView(v *Views)
 }
 
-// Views holds all the views as well as different managers for 
+// Views holds all the views as well as different managers for
 // the view layouts, operations and actions.
 type Views struct {
 	// pages holds and renders the different views, along with
