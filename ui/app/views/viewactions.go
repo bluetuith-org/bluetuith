@@ -412,6 +412,8 @@ func (v *viewActions) connect(set ...string) bool {
 			v.rv.status.ErrorMessage(err)
 			return
 		}
+
+		v.rv.player.closeForDevice(device.Address)
 	}
 
 	connectFunc := func() {
