@@ -2,13 +2,15 @@ package app
 
 import (
 	"syscall"
+	"time"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
-	"github.com/darkhz/bluetuith/ui/app/views"
-	"github.com/darkhz/bluetuith/ui/config"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
+
+	"github.com/darkhz/bluetuith/ui/app/views"
+	"github.com/darkhz/bluetuith/ui/config"
 )
 
 // Application holds an application with its views.
@@ -27,6 +29,7 @@ func NewApplication() *Application {
 func (a *Application) Start(session bluetooth.Session, featureSet *appfeatures.FeatureSet, cfg *config.Config) error {
 	binder := &appBinder{
 		session:     session,
+		draws:       make(chan struct{}, 1),
 		featureSet:  featureSet,
 		Application: tview.NewApplication(),
 	}
@@ -40,6 +43,8 @@ func (a *Application) Start(session bluetooth.Session, featureSet *appfeatures.F
 	binder.SetMouseCapture(appview.MouseFunc)
 	binder.SetBeforeDrawFunc(appview.BeforeDrawFunc)
 
+	go binder.monitorQueuedDraws()
+
 	return binder.SetRoot(appview.Layout, true).SetFocus(appview.InitialFocus).EnableMouse(true).Run()
 }
 
@@ -52,6 +57,7 @@ func (a *Application) Authorizer() bluetooth.SessionAuthorizer {
 type appBinder struct {
 	session       bluetooth.Session
 	featureSet    *appfeatures.FeatureSet
+	draws         chan struct{}
 	shouldSuspend bool
 
 	*tview.Application
@@ -75,6 +81,11 @@ func (a *appBinder) InstantDraw(drawFunc func()) {
 // QueueDraw only queues the drawing.
 func (a *appBinder) QueueDraw(drawFunc func()) {
 	a.QueueUpdate(drawFunc)
+
+	select {
+	case a.draws <- struct{}{}:
+	default:
+	}
 }
 
 // Refresh refreshes the screen.
@@ -121,4 +132,27 @@ func (a *appBinder) Suspend(t tcell.Screen) {
 // Close stops the application.
 func (a *appBinder) Close() {
 	a.Stop()
+}
+
+// monitorQueuedDraws monitors for any queued primitive draws and refrehses the screen.
+func (a *appBinder) monitorQueuedDraws() {
+	t := time.NewTicker(1 * time.Second)
+	defer t.Stop()
+
+	var queued bool
+
+	for {
+		select {
+		case <-t.C:
+			if queued {
+				go a.Refresh()
+				queued = false
+				t.Reset(1 * time.Second)
+			}
+
+		case <-a.draws:
+			queued = true
+			t.Reset(50 * time.Millisecond)
+		}
+	}
 }

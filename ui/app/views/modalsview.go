@@ -453,7 +453,7 @@ func (d *displayModalView) display(ctx context.Context) {
 		return event
 	})
 
-	go d.mgr.rv.app.InstantDraw(func() {
+	go d.mgr.rv.app.QueueDraw(func() {
 		if m, ok := d.mgr.getModal(d.name); ok {
 			m.remove(false)
 		}
@@ -514,7 +514,7 @@ func (c *confirmModalView) getReply(ctx context.Context) string {
 		return event
 	})
 
-	go c.mgr.rv.app.InstantDraw(func() {
+	go c.mgr.rv.app.QueueDraw(func() {
 		if m, ok := c.mgr.getModal(c.name); ok {
 			m.remove(false)
 		}
