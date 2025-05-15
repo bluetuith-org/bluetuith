@@ -559,12 +559,12 @@ func (k *Keybindings) initData() {
 		KeyPlayerSeekForward: {
 			Title:   "Seek Forward",
 			Context: ContextDevice,
-			Kb:      Keybinding{tcell.KeyLeft, ' ', tcell.ModNone},
+			Kb:      Keybinding{tcell.KeyRight, ' ', tcell.ModNone},
 		},
 		KeyPlayerSeekBackward: {
 			Title:   "Seek Backward",
 			Context: ContextDevice,
-			Kb:      Keybinding{tcell.KeyRight, ' ', tcell.ModNone},
+			Kb:      Keybinding{tcell.KeyLeft, ' ', tcell.ModNone},
 		},
 		KeyPlayerStop: {
 			Title:   "Stop",
