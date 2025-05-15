@@ -25,7 +25,9 @@ type mediaPlayer struct {
 
 	keyEvent               chan string
 	stopEvent, buttonEvent chan struct{}
-	currentMedia           bluetooth.MediaPlayer
+
+	currentMedia bluetooth.MediaPlayer
+	address      bluetooth.MacAddress
 
 	playerLock *semaphore.Weighted
 
@@ -74,6 +76,8 @@ func (m *mediaPlayer) show() {
 		return
 	}
 
+	m.address = device.Address
+
 	if m.keyEvent == nil {
 		m.stopEvent = make(chan struct{})
 		m.keyEvent = make(chan string, 1)
@@ -87,7 +91,21 @@ func (m *mediaPlayer) show() {
 
 // close closes the media player.
 func (m *mediaPlayer) close() {
-	if !m.isSupported.Load() {
+	if !m.isSupported.Load() || !m.isOpen.Load() {
+		return
+	}
+
+	select {
+	case <-m.stopEvent:
+
+	case m.stopEvent <- struct{}{}:
+
+	default:
+	}
+}
+
+func (m *mediaPlayer) closeForDevice(deviceAddress bluetooth.MacAddress) {
+	if !m.isSupported.Load() || !m.isOpen.Load() || m.address != deviceAddress {
 		return
 	}
 

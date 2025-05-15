@@ -412,6 +412,7 @@ func (d *deviceView) event() {
 				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
 				if ok {
 					d.table.RemoveRow(row)
+					d.player.closeForDevice(deviceEvent.Data.Address)
 				}
 			})
 		}
