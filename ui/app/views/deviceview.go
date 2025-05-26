@@ -369,50 +369,44 @@ func (d *deviceView) setPropertyInfo(row int, deviceEvent bluetooth.DeviceEventD
 
 // event handles device-specific events.
 func (d *deviceView) event() {
-	deviceSub := bluetooth.DeviceEvent().Subscribe()
-	if !deviceSub.Subscribable {
+	deviceSub, ok := bluetooth.DeviceEvents().Subscribe()
+	if !ok {
 		d.status.ErrorMessage(errors.New("cannot subscribe to device events"))
 		return
 	}
 
-	for deviceEvent := range deviceSub.C {
-		switch deviceEvent.Action {
-		case bluetooth.EventActionUpdated:
-			go d.app.QueueDraw(func() {
-				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
-				if ok {
-					d.setPropertyInfo(row, deviceEvent.Data, true)
+	for {
+		select {
+		case <-deviceSub.Done:
+			return
 
-				}
-			})
-
-		case bluetooth.EventActionAdded:
-			if deviceEvent.Data.AssociatedAdapter != d.adapter.getAdapter().Address {
-				continue
-			}
-
-			device, err := d.app.Session().Device(deviceEvent.Data.Address).Properties()
-			if err != nil {
-				return
-			}
-
+		case ev := <-deviceSub.AddedEvents:
 			go d.app.QueueDraw(func() {
 				deviceRow := d.table.GetRowCount()
 
-				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
+				row, ok := d.getRowByAddress(ev.Address)
 				if ok {
 					deviceRow = row
 				}
-				d.setInfo(deviceRow, device)
+				d.setInfo(deviceRow, ev)
 
 			})
 
-		case bluetooth.EventActionRemoved:
+		case ev := <-deviceSub.UpdatedEvents:
 			go d.app.QueueDraw(func() {
-				row, ok := d.getRowByAddress(deviceEvent.Data.Address)
+				row, ok := d.getRowByAddress(ev.Address)
+				if ok {
+					d.setPropertyInfo(row, ev, true)
+
+				}
+			})
+
+		case ev := <-deviceSub.RemovedEvents:
+			go d.app.QueueDraw(func() {
+				row, ok := d.getRowByAddress(ev.Address)
 				if ok {
 					d.table.RemoveRow(row)
-					d.player.closeForDevice(deviceEvent.Data.Address)
+					d.player.closeForDevice(ev.Address)
 				}
 			})
 		}

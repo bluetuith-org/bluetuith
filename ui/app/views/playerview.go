@@ -217,8 +217,8 @@ func (m *mediaPlayer) renderPlayer(cached bluetooth.MediaData, elements playerEl
 
 // updateLoop updates the media player.
 func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.MediaData) {
-	mediaSub := bluetooth.MediaEvent().Subscribe()
-	if !mediaSub.Subscribable {
+	mediaSub, ok := bluetooth.MediaEvents().Subscribe()
+	if !ok {
 		return
 	}
 	defer mediaSub.Unsubscribe()
@@ -237,10 +237,10 @@ func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.Me
 	t := time.NewTicker(1 * time.Second)
 	defer t.Stop()
 
-	var cached bluetooth.MediaEventData
+	var cached bluetooth.MediaData
 	var delta uint32 = 0
 
-	cached.MediaData = props
+	cached = props
 	if cached.Title == "" {
 		cached.Title = "<No media is playing>"
 	}
@@ -267,35 +267,31 @@ PlayerLoop:
 				elements.buttons.Highlight(h)
 			})
 
-		case mediaEvent, ok := <-mediaSub.C:
+		case ev, ok := <-mediaSub.UpdatedEvents:
 			if !ok {
 				break PlayerLoop
 			}
 
-			if mediaEvent.Action != bluetooth.EventActionUpdated || mediaEvent.Data.Address != device.Address {
-				continue
-			}
-
 			var track, progress, buttons bool
 
-			if mediaEvent.Data.TrackData != (bluetooth.TrackData{}) && mediaEvent.Data.TrackData != cached.TrackData {
-				cached.TrackData = mediaEvent.Data.TrackData
+			if ev.TrackData != (bluetooth.TrackData{}) && ev.TrackData != cached.TrackData {
+				cached.TrackData = ev.TrackData
 				track = true
 			}
 
-			if mediaEvent.Data.MediaData != (bluetooth.MediaData{}) && mediaEvent.Data.MediaData != cached.MediaData {
-				if mediaEvent.Data.Status != "" && mediaEvent.Data.Status != cached.Status {
-					cached.Status = mediaEvent.Data.Status
+			if ev != (bluetooth.MediaData{}) && ev != cached {
+				if ev.Status != "" && ev.Status != cached.Status {
+					cached.Status = ev.Status
 					buttons = true
 				}
 
-				if mediaEvent.Data.Position > 0 {
+				if ev.Position > 0 {
 					switch cached.Status {
 					case bluetooth.MediaForwardSeek, bluetooth.MediaReverseSeek:
-						if mediaEvent.Data.Position > cached.Position {
-							delta = mediaEvent.Data.Position - cached.Position
+						if ev.Position > cached.Position {
+							delta = ev.Position - cached.Position
 						} else {
-							delta = cached.Position - mediaEvent.Data.Position
+							delta = cached.Position - ev.Position
 						}
 
 					default:
@@ -303,14 +299,14 @@ PlayerLoop:
 						delta = 0
 					}
 
-					if mediaEvent.Data.Position != cached.Position {
-						cached.Position = mediaEvent.Data.Position
+					if ev.Position != cached.Position {
+						cached.Position = ev.Position
 						progress = true
 					}
 				}
 			}
 
-			data := cached.MediaData
+			data := cached
 			m.app.QueueDraw(func() {
 				if m.renderPlayer(data, elements, track, progress, buttons) {
 					t.Reset(1 * time.Second)
@@ -348,7 +344,7 @@ PlayerLoop:
 				continue
 			}
 
-			mediaData := cached.MediaData
+			mediaData := cached
 			m.app.QueueDraw(func() {
 				m.renderProgress(elements.progress, mediaData)
 			})
