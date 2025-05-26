@@ -3,20 +3,22 @@ package views
 import (
 	"errors"
 	"fmt"
-	"go.uber.org/atomic"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
 
+	"go.uber.org/atomic"
+
 	"slices"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
-	"github.com/darkhz/bluetuith/ui/keybindings"
-	"github.com/darkhz/bluetuith/ui/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"github.com/schollz/progressbar/v3"
+
+	"github.com/darkhz/bluetuith/ui/keybindings"
+	"github.com/darkhz/bluetuith/ui/theme"
 )
 
 const progressPage viewName = "progressview"
@@ -230,8 +232,8 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 // a file is being received, and on transfer completion, the received file should be moved to a user-accessible
 // directory.
 func (p *progressView) startTransfer(transferProps bluetooth.FileTransferData, path ...string) bool {
-	oppSub := bluetooth.FileTransferEvent().Subscribe()
-	if !oppSub.Subscribable {
+	oppSub, ok := bluetooth.FileTransferEvents().Subscribe()
+	if !ok {
 		p.status.ErrorMessage(fmt.Errorf("cannot subscribe to transfer event (file %s, device %s)", transferProps.Filename, transferProps.Address))
 		return false
 	}
@@ -239,30 +241,40 @@ func (p *progressView) startTransfer(transferProps bluetooth.FileTransferData, p
 
 	progress := p.newIndicator(transferProps, path != nil)
 	completed := false
-	for fileTransferEvent := range oppSub.C {
-		if fileTransferEvent.Data.Address != transferProps.Address {
-			continue
+	for {
+		select {
+		case <-oppSub.Done:
+			break
+
+		default:
 		}
-		if fileTransferEvent.Action == bluetooth.EventActionRemoved {
-			p.removeProgress(fileTransferEvent.Data, completed, path...)
+
+		select {
+		case ev := <-oppSub.UpdatedEvents:
+			if ev.Address != transferProps.Address {
+				continue
+			}
+
+			completed = ev.Status == bluetooth.TransferComplete
+			switch ev.Status {
+			case bluetooth.TransferError:
+				p.status.ErrorMessage(errors.New("Transfer has failed for " + transferProps.Name))
+				fallthrough
+
+			case bluetooth.TransferComplete:
+				p.removeProgress(ev, completed, path...)
+				return completed
+			}
+
+			progress.progressBar.Set64(int64(ev.Transferred))
+
+		case ev := <-oppSub.RemovedEvents:
+			p.removeProgress(ev, completed, path...)
 			return completed
 		}
-
-		completed = fileTransferEvent.Data.Status == bluetooth.TransferComplete
-		switch fileTransferEvent.Data.Status {
-		case bluetooth.TransferError:
-			p.status.ErrorMessage(errors.New("Transfer has failed for " + transferProps.Name))
-			fallthrough
-
-		case bluetooth.TransferComplete:
-			p.removeProgress(fileTransferEvent.Data, completed, path...)
-			return completed
-		}
-
-		progress.progressBar.Set64(int64(fileTransferEvent.Data.Transferred))
 	}
 
-	return false
+	return completed
 }
 
 // suspendTransfer suspends the transfer.

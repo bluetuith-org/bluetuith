@@ -8,10 +8,11 @@ import (
 	"sync"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
-	"github.com/darkhz/bluetuith/ui/theme"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"go.uber.org/atomic"
+
+	"github.com/darkhz/bluetuith/ui/theme"
 )
 
 // adapterView holds the adapter view, which contains the displays of:
@@ -279,33 +280,35 @@ func (a *adapterView) setStates() {
 
 // event handles adapter-specific events.
 func (a *adapterView) event() {
-	adapterSub := bluetooth.AdapterEvent().Subscribe()
-	if !adapterSub.Subscribable {
+	adapterSub, ok := bluetooth.AdapterEvents().Subscribe()
+	if !ok {
 		a.status.ErrorMessage(errors.New("cannot subscribe to adapter events"))
 		return
 	}
 
-	for adapterEvent := range adapterSub.C {
-		switch adapterEvent.Action {
-		case bluetooth.EventActionUpdated:
-			if adapterEvent.Data.Address == a.currentAdapter.Load().Address {
+	for {
+		select {
+		case <-adapterSub.Done:
+			return
+
+		case ev := <-adapterSub.AddedEvents:
+			go a.app.QueueDraw(func() {
+				a.change()
+
+				if ev.Address == a.currentAdapter.Load().Address {
+					a.updateTopStatus()
+					a.device.list()
+				}
+			})
+
+		case ev := <-adapterSub.UpdatedEvents:
+			if ev.Address == a.currentAdapter.Load().Address {
 				go a.app.QueueDraw(func() {
 					a.updateTopStatus()
 				})
 			}
 
-		case bluetooth.EventActionAdded:
-			go a.app.QueueDraw(func() {
-				a.change()
-
-				if adapterEvent.Data.Address == a.currentAdapter.Load().Address {
-					a.device.list()
-				}
-			})
-
-			fallthrough
-
-		case bluetooth.EventActionRemoved:
+		case <-adapterSub.RemovedEvents:
 			a.selectAdapter()
 
 			go a.app.QueueDraw(func() {
