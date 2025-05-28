@@ -1,7 +1,6 @@
 package app
 
 import (
-	"syscall"
 	"time"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
@@ -118,15 +117,7 @@ func (a *appBinder) Suspend(t tcell.Screen) {
 
 	a.shouldSuspend = false
 
-	if err := t.Suspend(); err != nil {
-		return
-	}
-	if err := syscall.Kill(syscall.Getpid(), syscall.SIGSTOP); err != nil {
-		return
-	}
-	if err := t.Resume(); err != nil {
-		return
-	}
+	suspendApp(t)
 }
 
 // Close stops the application.
