@@ -249,7 +249,7 @@ func (d *deviceView) setInfo(row int, device bluetooth.DeviceData) {
 	}
 	sb.WriteString(name)
 	sb.WriteString(" (")
-	if device.Alias != device.Name {
+	if device.Alias != "" && device.Alias != device.Name {
 		sb.WriteString(theme.ColorWrap(theme.ThemeDeviceAlias, device.Alias))
 		sb.WriteString(", ")
 	}
@@ -389,7 +389,6 @@ func (d *deviceView) event() {
 					deviceRow = row
 				}
 				d.setInfo(deviceRow, ev)
-
 			})
 
 		case ev := <-deviceSub.UpdatedEvents:
