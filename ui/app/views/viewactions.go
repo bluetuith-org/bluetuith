@@ -18,7 +18,7 @@ type viewActions struct {
 }
 
 // viewActionContext describes the context in which the
-// action is supoosed to be executed in.
+// action is supposed to be executed in.
 type viewActionContext int
 
 // The different context types for actions.
@@ -484,7 +484,7 @@ func (v *viewActions) trust(_ ...string) bool {
 	}
 
 	if err := v.rv.app.Session().Device(device.Address).SetTrusted(!device.Trusted); err != nil {
-		v.rv.status.ErrorMessage(errors.New("cannot _ trusted property for " + device.Name))
+		v.rv.status.ErrorMessage(errors.New("cannot set trusted property for " + device.Name))
 		return false
 	}
 
@@ -501,7 +501,7 @@ func (v *viewActions) block(_ ...string) bool {
 	}
 
 	if err := v.rv.app.Session().Device(device.Address).SetBlocked(!device.Blocked); err != nil {
-		v.rv.status.ErrorMessage(errors.New("cannot _ blocked property for " + device.Name))
+		v.rv.status.ErrorMessage(errors.New("cannot set blocked property for " + device.Name))
 		return false
 	}
 
@@ -524,7 +524,7 @@ func (v *viewActions) send(_ ...string) bool {
 	v.rv.op.startOperation(
 		func() {
 			v.rv.status.InfoMessage("Initializing OBEX Session()..", true)
-			oppSession := v.rv.app.Session().Obex(device.Address).FileTransfer()
+			oppSession := v.rv.app.Session().Obex(device.Address).ObjectPush()
 
 			err := oppSession.CreateSession(ctx)
 			if err != nil {
@@ -539,22 +539,27 @@ func (v *viewActions) send(_ ...string) bool {
 			fileList, err := v.rv.filepicker.Show()
 			if err != nil {
 				v.rv.status.ErrorMessage(err)
+				oppSession.RemoveSession()
+				return
+			}
+			if len(fileList) == 0 {
+				oppSession.RemoveSession()
 				return
 			}
 
+			proplist := make([]bluetooth.ObjectPushData, 0, len(fileList))
 			for _, file := range fileList {
 				props, err := oppSession.SendFile(file)
-				if err != nil {
+				if err != nil || props.Status == bluetooth.TransferError {
+					oppSession.RemoveSession()
 					v.rv.status.ErrorMessage(err)
-					continue
+					return
 				}
 
-				if !v.rv.progress.startTransfer(props) {
-					break
-				}
+				proplist = append(proplist, props)
 			}
 
-			oppSession.RemoveSession()
+			v.rv.progress.startTransfer(device.Address, oppSession, proplist)
 		},
 		func() {
 			cancel()
@@ -597,7 +602,7 @@ func (v *viewActions) hideplayer(_ ...string) bool {
 	return true
 }
 
-// info retreives the selected device, and shows the device information.
+// info retrieves the selected device, and shows the device information.
 func (v *viewActions) info(_ ...string) bool {
 	v.rv.app.QueueDraw(func() {
 		v.rv.device.showDetailedInfo()

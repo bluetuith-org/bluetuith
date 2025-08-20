@@ -127,7 +127,12 @@ func (k *Keybindings) Key(event *tcell.EventKey, keyContexts ...Context) Key {
 		ch = ' '
 	}
 
-	kb := Keybinding{event.Key(), ch, event.Modifiers()}
+	mod := event.Modifiers()
+	if unicode.IsUpper(ch) && mod&tcell.ModShift != 0 {
+		mod &^= tcell.ModShift
+	}
+
+	kb := Keybinding{event.Key(), ch, mod}
 
 	if key, ok := k.checkContexts(kb, keyContexts); ok {
 		return key
@@ -428,7 +433,7 @@ func (k *Keybindings) initData() {
 		KeyHelp: {
 			Title:   "Help",
 			Context: ContextApp,
-			Kb:      Keybinding{tcell.KeyRune, '?', tcell.ModNone},
+			Kb:      Keybinding{tcell.KeyRune, '?', tcell.ModShift},
 			Global:  true,
 		},
 		KeyNavigateUp: {

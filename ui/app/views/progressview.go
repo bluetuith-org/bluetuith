@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
+	"sync"
 	"time"
 
 	"go.uber.org/atomic"
 
-	"slices"
-
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
+	"github.com/puzpuzpuz/xsync/v3"
 	"github.com/schollz/progressbar/v3"
 
 	"github.com/darkhz/bluetuith/ui/keybindings"
@@ -22,6 +23,7 @@ import (
 )
 
 const progressPage viewName = "progressview"
+
 const progressViewButtonRegion = `["resume"][::b][Resume[][""] ["suspend"][::b][Pause[][""] ["cancel"][::b][Cancel[][""]`
 
 // progressView describes a file transfer progress display.
@@ -33,7 +35,18 @@ type progressView struct {
 
 	total atomic.Uint32
 
+	sessions *xsync.MapOf[bluetooth.MacAddress, *progressViewSession]
+
 	*Views
+}
+
+type progressViewSession struct {
+	sessionRemoved bool
+
+	transferSession bluetooth.ObexObjectPush
+	transfers       map[bluetooth.ObjectPushTransferID]struct{}
+
+	mu sync.Mutex
 }
 
 // progressIndicator describes a progress indicator, which will display
@@ -43,8 +56,8 @@ type progressIndicator struct {
 	progress    *tview.TableCell
 	progressBar *progressbar.ProgressBar
 
-	recv   bool
-	status bluetooth.FileTransferStatus
+	recv, drawn bool
+	status      bluetooth.ObjectPushStatus
 
 	deviceAddress bluetooth.MacAddress
 
@@ -126,6 +139,9 @@ func (p *progressView) Initialize() error {
 	p.status.AddPage(progressPage.String(), p.statusProgress, true, false)
 
 	p.isSupported.Store(true)
+	p.sessions = xsync.NewMapOf[bluetooth.MacAddress, *progressViewSession]()
+
+	go p.monitorTransfers()
 
 	return nil
 }
@@ -166,7 +182,7 @@ func (p *progressView) showStatus() {
 }
 
 // newIndicator returns a new Progress.
-func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool) *progressIndicator {
+func (p *progressView) newIndicator(props bluetooth.ObjectPushData, recv bool) *progressIndicator {
 	var progress progressIndicator
 	var progressText string
 
@@ -178,8 +194,16 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 
 	p.total.Add(1)
 
-	count := p.total.Load()
-	title := fmt.Sprintf(" [::b]%s %s[-:-:-]", progressText, props.Name)
+	name := props.Name
+	if name == "" && props.Filename != "" {
+		name = filepath.Base(filepath.Clean(props.Filename))
+	}
+	if props.Filename == "" && props.Name == "" {
+		progressText = ""
+		name = "Unknown file transfer"
+	}
+
+	title := fmt.Sprintf(" [::b]%s %s[-:-:-]", progressText, name)
 
 	progress.recv = recv
 	progress.deviceAddress = props.Address
@@ -207,8 +231,17 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 		progressbar.OptionThrottle(200*time.Millisecond),
 	)
 
+	return &progress
+}
+
+// drawIndicator draws a progress indicator onto the screen.
+func (p *progressView) drawIndicator(progress *progressIndicator, props bluetooth.ObjectPushEventData) {
+	if progress.drawn {
+		return
+	}
+
+	count := p.total.Load()
 	p.app.QueueDraw(func() {
-		p.show()
 		p.showStatus()
 
 		rows := p.view.GetRowCount()
@@ -222,25 +255,73 @@ func (p *progressView) newIndicator(props bluetooth.FileTransferData, recv bool)
 		)
 		p.view.SetCell(rows+1, 1, progress.desc)
 		p.view.SetCell(rows+1, 2, progress.progress)
-	})
 
-	return &progress
+		progress.drawn = true
+	})
 }
 
-// startTransfer creates a new progress indicator, monitors the OBEX DBus interface for transfer events,
-// and displays the progress on the screen. If the optional path parameter is provided, it means that
-// a file is being received, and on transfer completion, the received file should be moved to a user-accessible
-// directory.
-func (p *progressView) startTransfer(transferProps bluetooth.FileTransferData, path ...string) bool {
-	oppSub, ok := bluetooth.FileTransferEvents().Subscribe()
+// monitorTransfers monitors all incoming and outgoing Object Push transfers.
+func (p *progressView) monitorTransfers() {
+	oppSub, ok := bluetooth.ObjectPushEvents().Subscribe()
 	if !ok {
-		p.status.ErrorMessage(fmt.Errorf("cannot subscribe to transfer event (file %s, device %s)", transferProps.Filename, transferProps.Address))
-		return false
+		return
 	}
 	defer oppSub.Unsubscribe()
 
-	progress := p.newIndicator(transferProps, path != nil)
-	completed := false
+	type transferProperty struct {
+		indicator *progressIndicator
+
+		bluetooth.ObjectPushData
+	}
+
+	sessionMap := map[bluetooth.ObjectPushSessionID]map[bluetooth.ObjectPushTransferID]*transferProperty{}
+
+	getIndicator := func(ev bluetooth.ObjectPushEventData, remove bool) (*transferProperty, bool) {
+		var prop *transferProperty
+
+		tmap, ok := sessionMap[ev.SessionID]
+		if !ok {
+			return nil, false
+		}
+
+		prop, ok = tmap[ev.TransferID]
+		if remove {
+			if ok {
+				delete(sessionMap[ev.SessionID], ev.TransferID)
+			}
+
+			if len(sessionMap[ev.SessionID]) == 0 {
+				delete(sessionMap, ev.SessionID)
+			}
+		}
+
+		if prop != nil {
+			prop.ObjectPushEventData = ev
+		}
+
+		return prop, prop != nil
+	}
+
+	addIndicator := func(ev bluetooth.ObjectPushData) (*transferProperty, bool) {
+		if ev.SessionID == "" || ev.TransferID == "" {
+			return nil, false
+		}
+
+		indicator := p.newIndicator(ev, ev.Receiving)
+		indicator.progressBar.Set64(int64(ev.Transferred))
+		property := &transferProperty{indicator: indicator, ObjectPushData: ev}
+
+		tmap, ok := sessionMap[ev.SessionID]
+		if !ok {
+			sessionMap[ev.SessionID] = make(map[bluetooth.ObjectPushTransferID]*transferProperty)
+			tmap = sessionMap[ev.SessionID]
+		}
+
+		tmap[ev.TransferID] = property
+		sessionMap[ev.SessionID] = tmap
+
+		return property, true
+	}
 
 Transfer:
 	for {
@@ -248,35 +329,49 @@ Transfer:
 		case <-oppSub.Done:
 			break Transfer
 
-		default:
-		}
+		case ev := <-oppSub.AddedEvents:
+			_, _ = addIndicator(ev)
 
-		select {
 		case ev := <-oppSub.UpdatedEvents:
-			if ev.Address != transferProps.Address {
-				continue
+			property, ok := getIndicator(ev, false)
+			if !ok {
+				property, _ = addIndicator(bluetooth.ObjectPushData{ObjectPushEventData: ev})
 			}
 
-			completed = ev.Status == bluetooth.TransferComplete
-			switch ev.Status {
+			p.drawIndicator(property.indicator, property.ObjectPushEventData)
+			property.indicator.progressBar.Set64(int64(ev.Transferred))
+
+			switch property.Status {
 			case bluetooth.TransferError:
-				p.status.ErrorMessage(errors.New("Transfer has failed for " + transferProps.Name))
+				p.status.ErrorMessage(fmt.Errorf("transfer could not be completed for %s", ev.Address.String()))
 				fallthrough
 
 			case bluetooth.TransferComplete:
-				p.removeProgress(ev, completed, path...)
-				return completed
+				p.removeProgress(property.ObjectPushData)
+				_, _ = getIndicator(ev, true)
 			}
 
-			progress.progressBar.Set64(int64(ev.Transferred))
-
 		case ev := <-oppSub.RemovedEvents:
-			p.removeProgress(ev, completed, path...)
-			return completed
+			property, ok := getIndicator(ev, true)
+			if ok {
+				p.removeProgress(property.ObjectPushData)
+			}
 		}
 	}
+}
 
-	return completed
+// startTransfer creates a new progress indicator, monitors the OBEX DBus interface for transfer events,
+// and displays the progress on the screen. If the optional path parameter is provided, it means that
+// a file is being received, and on transfer completion, the received file should be moved to a user-accessible
+// directory.
+func (p *progressView) startTransfer(address bluetooth.MacAddress, session bluetooth.ObexObjectPush, files []bluetooth.ObjectPushData) {
+	psession := &progressViewSession{transferSession: session}
+	psession.transfers = make(map[bluetooth.ObjectPushTransferID]struct{})
+	for _, f := range files {
+		psession.transfers[f.TransferID] = struct{}{}
+	}
+
+	p.sessions.Store(address, psession)
 }
 
 // suspendTransfer suspends the transfer.
@@ -292,7 +387,7 @@ func (p *progressView) suspendTransfer() {
 		return
 	}
 
-	p.app.Session().Obex(progress.deviceAddress).FileTransfer().SuspendTransfer()
+	p.app.Session().Obex(progress.deviceAddress).ObjectPush().SuspendTransfer()
 }
 
 // resumeTransfer resumes the transfer.
@@ -308,27 +403,43 @@ func (p *progressView) resumeTransfer() {
 		return
 	}
 
-	p.app.Session().Obex(progress.deviceAddress).FileTransfer().ResumeTransfer()
+	p.app.Session().Obex(progress.deviceAddress).ObjectPush().ResumeTransfer()
 }
 
 // cancelTransfer cancels the transfer.
-// This does not work when a file is being received.
 func (p *progressView) cancelTransfer() {
 	transferProps, progress := p.transferData()
 	if transferProps.Address.IsNil() {
 		return
 	}
 
-	if progress.recv {
-		p.status.InfoMessage("Cannot cancel receiving transfer", false)
-		return
-	}
-
-	p.app.Session().Obex(progress.deviceAddress).FileTransfer().CancelTransfer()
+	p.app.Session().Obex(progress.deviceAddress).ObjectPush().CancelTransfer()
 }
 
-func (p *progressView) removeProgress(transferProps bluetooth.FileTransferEventData, isComplete bool, path ...string) {
+// removeProgress removes the progress indicator from the screen.
+func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 	p.total.Add(^uint32(0))
+
+	isComplete := transferProps.Status == bluetooth.TransferComplete
+	path := transferProps.Filename
+
+	if psession, ok := p.sessions.Load(transferProps.Address); ok {
+		psession.mu.Lock()
+		if !psession.sessionRemoved {
+			delete(psession.transfers, transferProps.TransferID)
+
+			if !isComplete || len(psession.transfers) == 0 {
+				psession.sessionRemoved = true
+
+				if psession.transferSession != nil {
+					go psession.transferSession.RemoveSession()
+				}
+
+				p.sessions.Delete(transferProps.Address)
+			}
+		}
+		psession.mu.Unlock()
+	}
 
 	p.app.QueueDraw(func() {
 		for row := range p.view.GetRowCount() {
@@ -337,12 +448,12 @@ func (p *progressView) removeProgress(transferProps bluetooth.FileTransferEventD
 				continue
 			}
 
-			props, ok := cell.GetReference().(bluetooth.FileTransferData)
+			props, ok := cell.GetReference().(bluetooth.ObjectPushData)
 			if !ok {
 				continue
 			}
 
-			if props.Address == transferProps.Address {
+			if props.TransferID == transferProps.TransferID {
 				p.view.RemoveRow(row)
 				p.view.RemoveRow(row - 1)
 
@@ -356,36 +467,38 @@ func (p *progressView) removeProgress(transferProps bluetooth.FileTransferEventD
 		}
 	})
 
-	if path != nil && isComplete {
-		if err := savefile(path[0], p.cfg.Values.ReceiveDir); err != nil {
-			p.status.ErrorMessage(err)
-		}
+	if path != "" && isComplete && transferProps.Receiving {
+		go func() {
+			if err := savefile(path, p.cfg.Values.ReceiveDir); err != nil {
+				p.status.ErrorMessage(err)
+			}
+		}()
 	}
 }
 
 // transferData gets the file transfer properties and the progress data
 // from the current selection in the progress view.
-func (p *progressView) transferData() (bluetooth.FileTransferData, *progressIndicator) {
+func (p *progressView) transferData() (bluetooth.ObjectPushData, *progressIndicator) {
 	row, _ := p.view.GetSelection()
 
 	pathCell := p.view.GetCell(row, 0)
 	if pathCell == nil {
-		return bluetooth.FileTransferData{}, nil
+		return bluetooth.ObjectPushData{}, nil
 	}
 
 	progCell := p.view.GetCell(row, 2)
 	if progCell == nil {
-		return bluetooth.FileTransferData{}, nil
+		return bluetooth.ObjectPushData{}, nil
 	}
 
-	props, ok := pathCell.GetReference().(bluetooth.FileTransferData)
+	props, ok := pathCell.GetReference().(bluetooth.ObjectPushData)
 	if !ok {
-		return bluetooth.FileTransferData{}, nil
+		return bluetooth.ObjectPushData{}, nil
 	}
 
 	progress, ok := progCell.GetReference().(*progressIndicator)
 	if !ok {
-		return bluetooth.FileTransferData{}, nil
+		return bluetooth.ObjectPushData{}, nil
 	}
 
 	return props, progress

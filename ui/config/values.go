@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
+
 	"github.com/darkhz/bluetuith/ui/keybindings"
 	"github.com/darkhz/bluetuith/ui/theme"
 )

@@ -8,7 +8,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func SuspendApp(t tcell.Screen) {
+func suspendApp(t tcell.Screen) {
 	if err := t.Suspend(); err != nil {
 		return
 	}

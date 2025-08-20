@@ -3,13 +3,14 @@ package views
 import (
 	"errors"
 	"fmt"
+	"path/filepath"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
 	"github.com/google/uuid"
 )
 
-// authorizer holds a set of functions used to authenticate pairing and receiving 
-// file transfer requests. A new instance of this is supposed to be passed to 
+// authorizer holds a set of functions used to authenticate pairing and receiving
+// file transfer requests. A new instance of this is supposed to be passed to
 // [bluetooth.Session.Start] to handle any authorization requests.
 type authorizer struct {
 	v           *Views
@@ -31,7 +32,7 @@ func (a *authorizer) setInitialized() {
 
 // AuthorizeTransfer asks the user to authorize a file transfer (Object Push) that is about to be sent
 // from the remote device.
-func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props bluetooth.FileTransferData) error {
+func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props bluetooth.ObjectPushData) error {
 	if !a.initialized {
 		return nil
 	}
@@ -41,13 +42,19 @@ func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props blue
 		return err
 	}
 
-	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Accept file '%s' (y/n/a)", device.Name, props.Filename))
+	filename := props.Name
+	if filename == "" {
+		filename = filepath.Base(props.Filename)
+	}
+
+	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Accept file '%s' (y/n/a)", device.Name, filename))
 	switch reply {
 	case "a":
 		a.alwaysAuthorize = true
 		fallthrough
 
 	case "y":
+		a.v.progress.showStatus()
 		return nil
 	}
 
@@ -79,7 +86,7 @@ func (a *authorizer) DisplayPinCode(timeout bluetooth.AuthTimeout, address bluet
 // DisplayPasskey only displays the passkey from the remote device to the user during a pairing authorization session.
 // This can be called multiple times, since each time the user enters a number on the remote device, this function
 // is called with the updated 'entered' value.
-// TODO: Handle multiple calls/draws when this function is called. 
+// TODO: Handle multiple calls/draws when this function is called.
 func (a *authorizer) DisplayPasskey(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress, passkey uint32, entered uint16) error {
 	if !a.initialized {
 		return nil
@@ -131,7 +138,7 @@ func (a *authorizer) ConfirmPasskey(timeout bluetooth.AuthTimeout, address bluet
 	return nil
 }
 
-// AuthorizePairing asks the user to authorize a pairing request. 
+// AuthorizePairing asks the user to authorize a pairing request.
 func (a *authorizer) AuthorizePairing(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress) error {
 	if !a.initialized {
 		return nil

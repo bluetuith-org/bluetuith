@@ -4,5 +4,5 @@ package app
 
 import "github.com/gdamore/tcell/v2"
 
-func suspendApp(t tcell.Screen) {
+func suspendApp(_ tcell.Screen) {
 }

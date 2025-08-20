@@ -238,7 +238,7 @@ func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.Me
 	defer t.Stop()
 
 	var cached bluetooth.MediaData
-	var delta uint32 = 0
+	var delta uint32
 
 	cached = props
 	if cached.Title == "" {
@@ -449,7 +449,7 @@ func (m *mediaPlayer) setup(deviceName string) playerElements {
 
 		return action, event
 	})
-	buttons.SetHighlightedFunc(func(added, re, rm []string) {
+	buttons.SetHighlightedFunc(func(added, _, _ []string) {
 		if added == nil {
 			return
 		}

@@ -292,10 +292,15 @@ func (a *adapterView) event() {
 			return
 
 		case ev := <-adapterSub.AddedEvents:
+			address := a.currentAdapter.Load().Address
+			if address.IsNil() && !a.selectAdapter() {
+				continue
+			}
+
 			go a.app.QueueDraw(func() {
 				a.change()
 
-				if ev.Address == a.currentAdapter.Load().Address {
+				if ev.Address == address {
 					a.updateTopStatus()
 					a.device.list()
 				}
@@ -309,12 +314,12 @@ func (a *adapterView) event() {
 			}
 
 		case <-adapterSub.RemovedEvents:
-			a.selectAdapter()
-
-			go a.app.QueueDraw(func() {
-				a.updateTopStatus()
-				a.change()
-			})
+			if a.selectAdapter() {
+				go a.app.QueueDraw(func() {
+					a.updateTopStatus()
+					a.change()
+				})
+			}
 		}
 	}
 }

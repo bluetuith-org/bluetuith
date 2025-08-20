@@ -3,12 +3,11 @@ package views
 import (
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
-	"github.com/darkhz/tview"
-	"github.com/gdamore/tcell/v2"
-
 	"github.com/darkhz/bluetuith/ui/config"
 	"github.com/darkhz/bluetuith/ui/keybindings"
 	"github.com/darkhz/bluetuith/ui/theme"
+	"github.com/darkhz/tview"
+	"github.com/gdamore/tcell/v2"
 )
 
 // AppData holds all the necessary layout and event handling data for the root application to initialize.
@@ -126,15 +125,15 @@ func (v *Views) Initialize(binder AppBinder, cfg *config.Config) (*AppData, erro
 	}
 
 	dontInit := map[viewInitializer]struct{}{}
-	if v.app.Features().HasAny(appfeatures.FeatureSendFile, appfeatures.FeatureReceiveFile) {
+	if !v.app.Features().HasAny(appfeatures.FeatureSendFile, appfeatures.FeatureReceiveFile) {
 		dontInit[v.filepicker] = struct{}{}
 		dontInit[v.progress] = struct{}{}
 	}
-	if v.app.Features().Has(appfeatures.FeatureMediaPlayer) {
+	if !v.app.Features().Has(appfeatures.FeatureMediaPlayer) {
 		dontInit[v.player] = struct{}{}
 		dontInit[v.audioProfiles] = struct{}{}
 	}
-	if v.app.Features().Has(appfeatures.FeatureNetwork) {
+	if !v.app.Features().Has(appfeatures.FeatureNetwork) {
 		dontInit[v.network] = struct{}{}
 	}
 

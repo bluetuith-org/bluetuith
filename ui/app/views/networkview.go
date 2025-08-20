@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
 	"go.uber.org/atomic"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
