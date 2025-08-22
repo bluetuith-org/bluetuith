@@ -7,11 +7,15 @@ builds:
       - GO111MODULE=on
       - GOPROXY=https://proxy.golang.org
 
+    flags:
+      - -trimpath
+
     ldflags:
       - -s -w -X github.com/darkhz/bluetuith/cmd.Version={{.Version}}@{{.ShortCommit}}
 
     goos:
       - linux
+      - windows
 
     goarch:
       - arm
@@ -23,6 +27,10 @@ builds:
       - 5
       - 6
       - 7
+
+    ignore:
+      - goos: windows
+        goarch: arm
 
 archives:
   - id: foo
@@ -39,9 +47,6 @@ archives:
 
 checksum:
   name_template: 'checksums.txt'
-
-snapshot:
-  name_template: "{{ .Tag }}-next"
 
 changelog:
   disable: true
