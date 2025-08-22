@@ -7,7 +7,7 @@ github.com/Southclaws/fault/ftag
 # github.com/Wifx/gonetworkmanager v0.5.0
 ## explicit; go 1.12
 github.com/Wifx/gonetworkmanager
-# github.com/bluetuith-org/bluetooth-classic v0.0.3
+# github.com/bluetuith-org/bluetooth-classic v0.0.4
 ## explicit; go 1.25
 github.com/bluetuith-org/bluetooth-classic/api/appfeatures
 github.com/bluetuith-org/bluetooth-classic/api/bluetooth

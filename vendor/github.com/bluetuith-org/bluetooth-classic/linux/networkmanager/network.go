@@ -23,8 +23,7 @@ import (
 
 // Network holds the network manager and active connections.
 type Network struct {
-	Address      bluetooth.MacAddress
-	DeviceExists func() error
+	Address bluetooth.MacAddress
 
 	*NetManager
 	bluetooth.NetworkDunSettings

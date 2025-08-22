@@ -26,7 +26,8 @@ type Obex struct {
 //
 //revive:disable
 type ObexManager struct {
-	agent *agent
+	agent       *agent
+	initialized bool
 
 	Obex
 }
@@ -36,7 +37,7 @@ type ObexManager struct {
 // NewManager returns a new ObexManager.
 func NewManager(SessionBus *dbus.Conn) *ObexManager {
 	return &ObexManager{
-		nil, Obex{SessionBus: SessionBus},
+		nil, false, Obex{SessionBus: SessionBus},
 	}
 }
 
@@ -88,12 +89,17 @@ SetupAgent:
 	}
 
 	capabilities |= ac.FeatureReceiveFile
+	o.initialized = true
 
 	return capabilities, nil
 }
 
 // Stop removes the obex agent and closes the obex session.
 func (o *ObexManager) Stop() error {
+	if !o.initialized {
+		return nil
+	}
+
 	return o.agent.remove()
 }
 

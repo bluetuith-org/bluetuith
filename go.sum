@@ -2,8 +2,8 @@ github.com/Southclaws/fault v0.8.2 h1:hbQANoRWYVWnQjpwJlNlfaolM+oIihgoFowaY3EBLC
 github.com/Southclaws/fault v0.8.2/go.mod h1:VUVkAWutC59SL16s6FTqf3I6I2z77RmnaW5XRz4bLOE=
 github.com/Wifx/gonetworkmanager v0.5.0 h1:P209z0yj705bl5tmyHTlpXPSv3QzjPtIM4X0SyDAqWA=
 github.com/Wifx/gonetworkmanager v0.5.0/go.mod h1:EdhHf2O00IZXfMv9LC6CS6SgTwcMTg/ZSDhGvch0cs8=
-github.com/bluetuith-org/bluetooth-classic v0.0.3 h1:4vHuEWlXyVd/Ozuyyqb7jOpnSqHThT129CZEjPhVzeQ=
-github.com/bluetuith-org/bluetooth-classic v0.0.3/go.mod h1:AjXKElcH4pBV879elWhqdxjvBXXtDQ5TNIoBs8ZeJ5Q=
+github.com/bluetuith-org/bluetooth-classic v0.0.4 h1:Tqb5mpBxFqDYZ5TmHGQhdB/Z9pL0Ybuajnks2TbOHvg=
+github.com/bluetuith-org/bluetooth-classic v0.0.4/go.mod h1:AjXKElcH4pBV879elWhqdxjvBXXtDQ5TNIoBs8ZeJ5Q=
 github.com/chengxilo/virtualterm v1.0.4 h1:Z6IpERbRVlfB8WkOmtbHiDbBANU7cimRIof7mk9/PwM=
 github.com/chengxilo/virtualterm v1.0.4/go.mod h1:DyxxBZz/x1iqJjFxTFcr6/x+jSpqN0iwWCOK1q10rlY=
 github.com/cpuguy83/go-md2man/v2 v2.0.7 h1:zbFlGlXEAKlwXpmvle3d8Oe3YnkKIK4xSRTd3sHPnBo=

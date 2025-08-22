@@ -29,7 +29,9 @@ func NewAuthTimeout(timeout time.Duration) AuthTimeout {
 
 // Cancel cancels the inner context.
 func (a *AuthTimeout) Cancel() {
-	a.cancel()
+	if a.cancel != nil {
+		a.cancel()
+	}
 }
 
 // DefaultAuthorizer describes a default authentication handler.
