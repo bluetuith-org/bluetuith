@@ -3,11 +3,12 @@ package views
 import (
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
+	"github.com/darkhz/tview"
+	"github.com/gdamore/tcell/v2"
+
 	"github.com/darkhz/bluetuith/ui/config"
 	"github.com/darkhz/bluetuith/ui/keybindings"
 	"github.com/darkhz/bluetuith/ui/theme"
-	"github.com/darkhz/tview"
-	"github.com/gdamore/tcell/v2"
 )
 
 // AppData holds all the necessary layout and event handling data for the root application to initialize.
@@ -148,6 +149,9 @@ func (v *Views) Initialize(binder AppBinder, cfg *config.Config) (*AppData, erro
 		}
 	}
 
+	v.menu.setHeader("")
+
+	v.kb.Initialize()
 	v.auth.setInitialized()
 
 	return &AppData{
@@ -197,10 +201,19 @@ func (v *Views) arrangeViews() *tview.Flex {
 		SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
 
 	menuArea := tview.NewFlex().
-		AddItem(v.menu.bar, 0, 1, false).
-		AddItem(box, 1, 0, false).
-		AddItem(v.adapter.topStatus, 0, 1, false)
+		AddItem(v.adapter.topAdapterName, 0, 1, false).
+		AddItem(v.menu.bar, len(v.menu.bar.GetText(true)), 1, false).
+		AddItem(box, 1, 1, false).
+		AddItem(v.adapter.topStatus, 0, 4, false)
 	menuArea.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
+	menuArea.SetDrawFunc(func(_ tcell.Screen, x, y, width, height int) (int, int, int, int) {
+		w := len(v.adapter.topAdapterName.GetText(true))
+		resize := min(w, width/8)
+
+		menuArea.ResizeItem(v.adapter.topAdapterName, resize, 0)
+
+		return x, y, width, height
+	})
 
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).

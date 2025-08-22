@@ -19,6 +19,7 @@ import (
 // - The adapter name on the left-most side of the menubar.
 // - The adapter statuses on the roght-most side of the menubar.
 type adapterView struct {
+	topAdapterName *tview.TextView
 	topStatus      *tview.TextView
 	currentAdapter atomic.Pointer[bluetooth.AdapterData]
 
@@ -32,6 +33,19 @@ func (a *adapterView) Initialize() error {
 	a.topStatus.SetDynamicColors(true)
 	a.topStatus.SetTextAlign(tview.AlignRight)
 	a.topStatus.SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
+
+	a.topAdapterName = tview.NewTextView()
+	a.topAdapterName.SetRegions(true)
+	a.topAdapterName.SetDynamicColors(true)
+	a.topAdapterName.SetTextAlign(tview.AlignLeft)
+	a.topAdapterName.SetBackgroundColor(theme.GetColor(theme.ThemeMenuBar))
+	a.topAdapterName.SetHighlightedFunc(func(added, _, _ []string) {
+		if len(added) == 0 {
+			return
+		}
+
+		a.change()
+	})
 
 	a.setAdapter(a.cfg.Values.SelectedAdapter)
 	a.updateTopStatus()
@@ -64,7 +78,7 @@ func (a *adapterView) refreshHeader() {
 		props.Name,
 		props.UniqueName,
 	)
-	a.menu.setHeader(theme.ColorWrap(theme.ThemeAdapter, headerText, "::bu"))
+	a.topAdapterName.SetText(theme.ColorWrap(theme.ThemeAdapter, headerText, "::bu"))
 }
 
 // getAdapter returns the currently selected adapter.
@@ -168,6 +182,8 @@ func (a *adapterView) change() {
 					),
 				)
 			}
+
+			a.topAdapterName.Highlight(menuAdapterChangeName.String())
 
 			return width, index
 		})

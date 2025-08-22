@@ -67,12 +67,9 @@ func (m *menuBarView) Initialize() error {
 		}
 
 		pos := m.bar.GetRegionStart(added[0])
-		if pos == 0 {
-			m.adapter.change()
-			return
-		}
+		_, _, w, _ := m.adapter.topAdapterName.GetInnerRect()
 
-		m.setupSubMenu(pos, 1, viewName(added[0]))
+		m.setupSubMenu(pos+w, 1, viewName(added[0]))
 	})
 
 	m.modal = m.modals.newMenuModal(menuBarName.String(), 0, 0)
@@ -374,7 +371,7 @@ func (m *menuBarView) next() {
 	}
 
 	for _, region := range m.bar.GetRegionIDs() {
-		if highlighted[0] != region && highlighted[0] != menuAdapterChangeName.String() {
+		if highlighted[0] != region {
 			m.bar.Highlight(region)
 		}
 	}
@@ -387,6 +384,7 @@ func (m *menuBarView) exit(highlight ...struct{}) {
 	if highlight == nil {
 		m.modal.name = menuBarName.String()
 		m.bar.Highlight("")
+		m.adapter.topAdapterName.Highlight("")
 	}
 
 	m.app.FocusPrimitive(m.device.table)
