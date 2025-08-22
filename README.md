@@ -15,8 +15,6 @@ This project is funded through [NGI Zero Core](https://nlnet.nl/core), a fund es
 [<img src="https://nlnet.nl/logo/banner.png" alt="NLnet foundation logo" width="20%" />](https://nlnet.nl)
 [<img src="https://nlnet.nl/image/logos/NGI0_tag.svg" alt="NGI Zero Logo" width="20%" />](https://nlnet.nl/core)
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
-
 ## Features
 ### UI
 - Adapter selector and status indicators
@@ -34,4 +32,6 @@ Please view the documentation for a list of operating requirements per platform.
 The documentation is now hosted [here](https://bluetuith-org.github.io/bluetuith/).
 
 The wiki is out-of-date.
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
 
