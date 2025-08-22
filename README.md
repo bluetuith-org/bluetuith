@@ -33,5 +33,7 @@ The documentation is now hosted [here](https://bluetuith-org.github.io/bluetuith
 
 The wiki is out-of-date.
 
+
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
+
 
