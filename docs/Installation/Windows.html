@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="no-js" lang="en">
 <head>
-    <title>Keybindings - Bluetuith</title>
+    <title>Windows - Bluetuith</title>
     <meta name="description" content="A terminal-based Bluetooth manager for Linux">
     <meta name="author" content="darkhz">
     <meta charset="UTF-8">
@@ -62,13 +62,13 @@
         <div class="Collapsible__content" id="sidebar_content">
             <!-- Navigation -->
             <ul class='Nav'>
-<li class='Nav__item  has-children'><a href="../Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
+<li class='Nav__item Nav__item--open has-children'><a href="../Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
 <li class='Nav__item '><a href="../Installation/Linux.html">Linux</a></li>
-<li class='Nav__item '><a href="../Installation/Windows.html">Windows</a></li></ul></li>
+<li class='Nav__item Nav__item--active'><a href="../Installation/Windows.html">Windows</a></li></ul></li>
 <li class='Nav__item '><a href="../Configuration.html">Configuration</a></li>
-<li class='Nav__item Nav__item--open has-children'><a href="../Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
+<li class='Nav__item  has-children'><a href="../Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
 <li class='Nav__item '><a href="../Usage/Command_Line_Options.html">Command Line Options</a></li>
-<li class='Nav__item Nav__item--active'><a href="../Usage/Keybindings.html">Keybindings</a></li></ul></li>
+<li class='Nav__item '><a href="../Usage/Keybindings.html">Keybindings</a></li></ul></li>
 <li class='Nav__item '><a href="../Additional_Notes.html">Additional Notes</a></li>
 <li class='Nav__item '><a href="../Credits.html">Credits</a></li></ul>
             <div class="Links">
@@ -99,227 +99,39 @@
                 <article class="Page">
 
     <div class="Page__header">
-        <h1><a href="../Usage/Command_Line_Options.html">Usage</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Usage/Keybindings.html">Keybindings</a></h1>
+        <h1><a href="../Installation/Linux.html">Installation</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Installation/Windows.html">Windows</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/03_Usage\02_Keybindings.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/01_Installation\02_Windows.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
 
     <div class="s-content">
-        <h1><a id="device-screen" href="#device-screen" class="Permalink" aria-hidden="true" title="Permalink">#</a>Device Screen</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Open the menu</td>
-<td><kbd><code>Alt</code></kbd>+<kbd><code>m</code></kbd></td>
-</tr>
-<tr>
-<td>Navigate between menus</td>
-<td><kbd><code>Tab</code></kbd></td>
-</tr>
-<tr>
-<td>Navigate between devices/options</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle adapter power state</td>
-<td><kbd><code>o</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle discoverable state</td>
-<td><kbd><code>S</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle pairable state</td>
-<td><kbd><code>P</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle scan (discovery state)</td>
-<td><kbd><code>s</code></kbd></td>
-</tr>
-<tr>
-<td>Change adapter</td>
-<td><kbd><code>a</code></kbd></td>
-</tr>
-<tr>
-<td>Send files</td>
-<td><kbd><code>f</code></kbd></td>
-</tr>
-<tr>
-<td>Connect to network</td>
-<td><kbd><code>n</code></kbd></td>
-</tr>
-<tr>
-<td>Progress view</td>
-<td><kbd><code>v</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle connection with selected device</td>
-<td><kbd><code>c</code></kbd></td>
-</tr>
-<tr>
-<td>Pair with selected device</td>
-<td><kbd><code>p</code></kbd></td>
-</tr>
-<tr>
-<td>Trust selected device</td>
-<td><kbd><code>t</code></kbd></td>
-</tr>
-<tr>
-<td>Show media player</td>
-<td><kbd><code>m</code></kbd></td>
-</tr>
-<tr>
-<td>Hide media player</td>
-<td><kbd><code>M</code></kbd></td>
-</tr>
-<tr>
-<td>Show device information</td>
-<td><kbd><code>i</code></kbd></td>
-</tr>
-<tr>
-<td>Remove device from adapter</td>
-<td><kbd><code>d</code></kbd></td>
-</tr>
-<tr>
-<td>Cancel operation</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>x</code></kbd></td>
-</tr>
-<tr>
-<td>Quit</td>
-<td><kbd><code>q</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="file-picker" href="#file-picker" class="Permalink" aria-hidden="true" title="Permalink">#</a>File Picker</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Navigate between directory entries</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Enter a directory</td>
-<td><kbd><code>Right</code></kbd></td>
-</tr>
-<tr>
-<td>Go back one directory</td>
-<td><kbd><code>Left</code></kbd></td>
-</tr>
-<tr>
-<td>Select one file</td>
-<td><kbd><code>Space</code></kbd></td>
-</tr>
-<tr>
-<td>Invert file selection</td>
-<td><kbd><code>a</code></kbd></td>
-</tr>
-<tr>
-<td>Select all files</td>
-<td><kbd><code>A</code></kbd></td>
-</tr>
-<tr>
-<td>Refresh current directory</td>
-<td><kbd><code>Ctrl</code></kbd> + <kbd><code>r</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle hidden files</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>h</code></kbd></td>
-</tr>
-<tr>
-<td>Confirm file(s) selection</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>s</code></kbd></td>
-</tr>
-<tr>
-<td>Exit</td>
-<td><kbd><code>Escape</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="progress-view" href="#progress-view" class="Permalink" aria-hidden="true" title="Permalink">#</a>Progress View</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Navigate between transfers</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Suspend transfer</td>
-<td><kbd><code>z</code></kbd></td>
-</tr>
-<tr>
-<td>Resume transfer</td>
-<td><kbd><code>g</code></kbd></td>
-</tr>
-<tr>
-<td>Cancel transfer</td>
-<td><kbd><code>x</code></kbd></td>
-</tr>
-<tr>
-<td>Exit</td>
-<td><kbd><code>Escape</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="media-player" href="#media-player" class="Permalink" aria-hidden="true" title="Permalink">#</a>Media Player</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Toggle play/pause</td>
-<td><kbd><code>Space</code></kbd></td>
-</tr>
-<tr>
-<td>Next</td>
-<td><kbd><code>&gt;</code></kbd></td>
-</tr>
-<tr>
-<td>Previous</td>
-<td><kbd><code>&lt;</code></kbd></td>
-</tr>
-<tr>
-<td>Rewind</td>
-<td><kbd><code>Left</code></kbd></td>
-</tr>
-<tr>
-<td>Fast forward</td>
-<td><kbd><code>Right</code></kbd></td>
-</tr>
-<tr>
-<td>Stop</td>
-<td><kbd><code>]</code></kbd></td>
-</tr>
-</tbody>
-</table>
+        <h1><a id="requirements" href="#requirements" class="Permalink" aria-hidden="true" title="Permalink">#</a>Requirements</h1>
+<p>The <code>haraltd</code> daemon is required to be downloaded and started.
+Download it from <a href="https://github.com/bluetuith-org/haraltd" class="Link--external" rel="noopener noreferrer">here</a>.
+Once downloaded and extracted from the archive:</p>
+<ul>
+<li>Double-click on the <code>haraltd.exe</code> executable</li>
+<li>A SmartScreen window will pop-up, since the executable is currently not signed. Press “Allow anyways”.</li>
+<li>A UAC popup will show, press “Yes”</li>
+<li>The daemon will launch, a notification will pop-up and an icon will be displayed in the taskbar.</li>
+<li>To stop the daemon, right-click the same icon, and press the “Stop” option.</li>
+</ul>
+<p>Alternatively, to start it from Powershell or CMD.exe, type:</p>
+<pre><code class="hljs powershell">&lt;path<span class="hljs-literal">-to</span><span class="hljs-literal">-downloaded</span><span class="hljs-literal">-executable</span>&gt;\haraltd server start
+</code></pre>
+<h1><a id="installation" href="#installation" class="Permalink" aria-hidden="true" title="Permalink">#</a>Installation</h1>
+<p>To install and run <strong>bluetuith</strong>:</p>
+<ul>
+<li>Download a release matching the architecture of the operating system, extract the archive</li>
+<li>Open Powershell or CMD, and run: <code>bluetuith</code></li>
+</ul>
     </div>
 
         <nav>
         <ul class="Pager">
-            <li class=Pager--prev><a href="../Usage/Command_Line_Options.html">Previous</a></li>            <li class=Pager--next><a href="../Additional_Notes.html">Next</a></li>        </ul>
+            <li class=Pager--prev><a href="../Installation/Linux.html">Previous</a></li>            <li class=Pager--next><a href="../Configuration.html">Next</a></li>        </ul>
     </nav>
     </article>
 

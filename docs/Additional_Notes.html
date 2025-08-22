@@ -62,7 +62,9 @@
         <div class="Collapsible__content" id="sidebar_content">
             <!-- Navigation -->
             <ul class='Nav'>
-<li class='Nav__item '><a href="Installation.html">Installation</a></li>
+<li class='Nav__item  has-children'><a href="Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
+<li class='Nav__item '><a href="Installation/Linux.html">Linux</a></li>
+<li class='Nav__item '><a href="Installation/Windows.html">Windows</a></li></ul></li>
 <li class='Nav__item '><a href="Configuration.html">Configuration</a></li>
 <li class='Nav__item  has-children'><a href="Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
 <li class='Nav__item '><a href="Usage/Command_Line_Options.html">Command Line Options</a></li>
@@ -105,9 +107,17 @@
             </div>
 
     <div class="s-content">
-        <ul>
+        <h1><a id="linux" href="#linux" class="Permalink" aria-hidden="true" title="Permalink">#</a>Linux</h1>
+<ul>
 <li>Ensure that the bluetooth service is up and running, and it is visible to DBus before launching the application. With systemd you can find out the status using the following command: <code>systemctl status bluetooth.service</code>.</li>
+<li>Check whether the OBEX service is running as well using <code>systemctl status obexd</code> and if not running, start it using <code>systemctl start obexd</code>.</li>
 <li>Only one transfer (either of send or receive) can happen on an adapter. Attempts to start another transfer while a transfer is already running (for example, trying to send files to a device when a transfer is already in progress) will be silently ignored.</li>
+</ul>
+<h1><a id="windows" href="#windows" class="Permalink" aria-hidden="true" title="Permalink">#</a>Windows</h1>
+<ul>
+<li>Check whether the <code>haraltd</code> daemon is running, and if not, run the following command from the folder where <code>haraltd</code> was downloaded:
+<code>haraltd server start</code></li>
+<li>The daemon will currently not start if no adapter are present in the system.</li>
 </ul>
     </div>
 

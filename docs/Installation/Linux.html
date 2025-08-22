@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="no-js" lang="en">
 <head>
-    <title>Keybindings - Bluetuith</title>
+    <title>Linux - Bluetuith</title>
     <meta name="description" content="A terminal-based Bluetooth manager for Linux">
     <meta name="author" content="darkhz">
     <meta charset="UTF-8">
@@ -62,13 +62,13 @@
         <div class="Collapsible__content" id="sidebar_content">
             <!-- Navigation -->
             <ul class='Nav'>
-<li class='Nav__item  has-children'><a href="../Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
-<li class='Nav__item '><a href="../Installation/Linux.html">Linux</a></li>
+<li class='Nav__item Nav__item--open has-children'><a href="../Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
+<li class='Nav__item Nav__item--active'><a href="../Installation/Linux.html">Linux</a></li>
 <li class='Nav__item '><a href="../Installation/Windows.html">Windows</a></li></ul></li>
 <li class='Nav__item '><a href="../Configuration.html">Configuration</a></li>
-<li class='Nav__item Nav__item--open has-children'><a href="../Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
+<li class='Nav__item  has-children'><a href="../Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
 <li class='Nav__item '><a href="../Usage/Command_Line_Options.html">Command Line Options</a></li>
-<li class='Nav__item Nav__item--active'><a href="../Usage/Keybindings.html">Keybindings</a></li></ul></li>
+<li class='Nav__item '><a href="../Usage/Keybindings.html">Keybindings</a></li></ul></li>
 <li class='Nav__item '><a href="../Additional_Notes.html">Additional Notes</a></li>
 <li class='Nav__item '><a href="../Credits.html">Credits</a></li></ul>
             <div class="Links">
@@ -99,227 +99,82 @@
                 <article class="Page">
 
     <div class="Page__header">
-        <h1><a href="../Usage/Command_Line_Options.html">Usage</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Usage/Keybindings.html">Keybindings</a></h1>
+        <h1><a href="../Installation/Linux.html">Installation</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Installation/Linux.html">Linux</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/03_Usage\02_Keybindings.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/01_Installation\01_Linux.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
 
     <div class="s-content">
-        <h1><a id="device-screen" href="#device-screen" class="Permalink" aria-hidden="true" title="Permalink">#</a>Device Screen</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Open the menu</td>
-<td><kbd><code>Alt</code></kbd>+<kbd><code>m</code></kbd></td>
-</tr>
-<tr>
-<td>Navigate between menus</td>
-<td><kbd><code>Tab</code></kbd></td>
-</tr>
-<tr>
-<td>Navigate between devices/options</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle adapter power state</td>
-<td><kbd><code>o</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle discoverable state</td>
-<td><kbd><code>S</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle pairable state</td>
-<td><kbd><code>P</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle scan (discovery state)</td>
-<td><kbd><code>s</code></kbd></td>
-</tr>
-<tr>
-<td>Change adapter</td>
-<td><kbd><code>a</code></kbd></td>
-</tr>
-<tr>
-<td>Send files</td>
-<td><kbd><code>f</code></kbd></td>
-</tr>
-<tr>
-<td>Connect to network</td>
-<td><kbd><code>n</code></kbd></td>
-</tr>
-<tr>
-<td>Progress view</td>
-<td><kbd><code>v</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle connection with selected device</td>
-<td><kbd><code>c</code></kbd></td>
-</tr>
-<tr>
-<td>Pair with selected device</td>
-<td><kbd><code>p</code></kbd></td>
-</tr>
-<tr>
-<td>Trust selected device</td>
-<td><kbd><code>t</code></kbd></td>
-</tr>
-<tr>
-<td>Show media player</td>
-<td><kbd><code>m</code></kbd></td>
-</tr>
-<tr>
-<td>Hide media player</td>
-<td><kbd><code>M</code></kbd></td>
-</tr>
-<tr>
-<td>Show device information</td>
-<td><kbd><code>i</code></kbd></td>
-</tr>
-<tr>
-<td>Remove device from adapter</td>
-<td><kbd><code>d</code></kbd></td>
-</tr>
-<tr>
-<td>Cancel operation</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>x</code></kbd></td>
-</tr>
-<tr>
-<td>Quit</td>
-<td><kbd><code>q</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="file-picker" href="#file-picker" class="Permalink" aria-hidden="true" title="Permalink">#</a>File Picker</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Navigate between directory entries</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Enter a directory</td>
-<td><kbd><code>Right</code></kbd></td>
-</tr>
-<tr>
-<td>Go back one directory</td>
-<td><kbd><code>Left</code></kbd></td>
-</tr>
-<tr>
-<td>Select one file</td>
-<td><kbd><code>Space</code></kbd></td>
-</tr>
-<tr>
-<td>Invert file selection</td>
-<td><kbd><code>a</code></kbd></td>
-</tr>
-<tr>
-<td>Select all files</td>
-<td><kbd><code>A</code></kbd></td>
-</tr>
-<tr>
-<td>Refresh current directory</td>
-<td><kbd><code>Ctrl</code></kbd> + <kbd><code>r</code></kbd></td>
-</tr>
-<tr>
-<td>Toggle hidden files</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>h</code></kbd></td>
-</tr>
-<tr>
-<td>Confirm file(s) selection</td>
-<td><kbd><code>Ctrl</code></kbd>+<kbd><code>s</code></kbd></td>
-</tr>
-<tr>
-<td>Exit</td>
-<td><kbd><code>Escape</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="progress-view" href="#progress-view" class="Permalink" aria-hidden="true" title="Permalink">#</a>Progress View</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Navigate between transfers</td>
-<td><kbd><code>Up</code></kbd>/<kbd><code>Down</code></kbd></td>
-</tr>
-<tr>
-<td>Suspend transfer</td>
-<td><kbd><code>z</code></kbd></td>
-</tr>
-<tr>
-<td>Resume transfer</td>
-<td><kbd><code>g</code></kbd></td>
-</tr>
-<tr>
-<td>Cancel transfer</td>
-<td><kbd><code>x</code></kbd></td>
-</tr>
-<tr>
-<td>Exit</td>
-<td><kbd><code>Escape</code></kbd></td>
-</tr>
-</tbody>
-</table>
-<h1><a id="media-player" href="#media-player" class="Permalink" aria-hidden="true" title="Permalink">#</a>Media Player</h1>
-<table>
-<thead>
-<tr>
-<th>Operation</th>
-<th>Keybinding</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Toggle play/pause</td>
-<td><kbd><code>Space</code></kbd></td>
-</tr>
-<tr>
-<td>Next</td>
-<td><kbd><code>&gt;</code></kbd></td>
-</tr>
-<tr>
-<td>Previous</td>
-<td><kbd><code>&lt;</code></kbd></td>
-</tr>
-<tr>
-<td>Rewind</td>
-<td><kbd><code>Left</code></kbd></td>
-</tr>
-<tr>
-<td>Fast forward</td>
-<td><kbd><code>Right</code></kbd></td>
-</tr>
-<tr>
-<td>Stop</td>
-<td><kbd><code>]</code></kbd></td>
-</tr>
-</tbody>
-</table>
+        <h1><a id="requirements" href="#requirements" class="Permalink" aria-hidden="true" title="Permalink">#</a>Requirements</h1>
+<p>Before installation, ensure that the required dependencies are installed:</p>
+<ul>
+<li>Bluez</li>
+<li>DBus</li>
+<li>NetworkManager (optional, required for PANU)</li>
+<li>ModemManager (optional, required for DUN)</li>
+<li>PulseAudio (optional, required to manage device audio profiles)</li>
+</ul>
+<h1><a id="installation" href="#installation" class="Permalink" aria-hidden="true" title="Permalink">#</a>Installation</h1>
+<p>After installing the dependencies, you can install bluetuith using any one method listed below.</p>
+<h2><a id="package-manager" href="#package-manager" class="Permalink" aria-hidden="true" title="Permalink">#</a>Package manager</h2>
+<p>If your distribution’s repositories have bluetuith, you can install it directly with your package manager.
+For <strong>Arch Linux</strong>, The package bluetuith-bin is in the AUR. Install it using an AUR helper of your choice like so:<br/></p>
+<pre><code>&lt;aur-helper&gt; -S bluetuith-bin.
+</code></pre>
+<p>For more information on whether bluetuith is packaged for your distribution, check the <a href="https://repology.org/project/bluetuith/versions" class="Link--external" rel="noopener noreferrer">repology</a> page.</p>
+<h2><a id="releases" href="#releases" class="Permalink" aria-hidden="true" title="Permalink">#</a>Releases</h2>
+<p>You can retrieve the package’s tagged release from the project’s <a href="https://github.com/darkhz/bluetuith/releases/" class="Link--external" rel="noopener noreferrer">Releases</a> page.</p>
+<p>Before downloading, note:</p>
+<ul>
+<li>The latest tag of the release</li>
+<li>Your operating system (for example, Linux)</li>
+<li>Your architecture (for example, x86_64)</li>
+</ul>
+<p>The binary is packaged in a gzipped tar file (with the extension <code>.tar.gz</code>) in the format:
+<code>bluetuith_&lt;tag&gt;_&lt;Operating System&gt;_&lt;Architecture&gt;.tar.gz</code></p>
+<p>To download a package for:</p>
+<ul>
+<li>with the release tag ‘v0.1.7’,</li>
+<li>a ‘Linux’ distribution,</li>
+<li>on the ‘x86_64’ architecture,</li>
+</ul>
+<p>You would select:
+<code>bluetuith_0.1.7_Linux_x86_64.tar.gz</code></p>
+<p>You can follow these steps for other Operating Systems as well. Note that for Apple computers like Macs, the Operating System is <strong>Darwin</strong>.</p>
+<h2><a id="go-toolchain" href="#go-toolchain" class="Permalink" aria-hidden="true" title="Permalink">#</a>GO Toolchain</h2>
+<p>Ensure that the <strong>go</strong> binary is present in your system before following the listed steps.</p>
+<h3><a id="install" href="#install" class="Permalink" aria-hidden="true" title="Permalink">#</a>Install</h3>
+<p>To install it directly from the repository without having to compile anything, use:</p>
+<pre><code>go install github.com/darkhz/bluetuith@latest
+</code></pre>
+<p>Note that the installed binary may be present in ~/go/bin, so ensure that your $PATH points to that directory as well.</p>
+<h3><a id="compile" href="#compile" class="Permalink" aria-hidden="true" title="Permalink">#</a>Compile</h3>
+<ul>
+<li>
+<p>Clone the <a href="https://github.com/darkhz/bluetuith/" class="Link--external" rel="noopener noreferrer">source</a> into a folder using git, like so:<br/><br/></p>
+<pre><code>git clone https://github.com/darkhz/bluetuith/
+</code></pre>
+<p>The source should be cloned into a directory named “<strong>bluetuith</strong>”.<br/><br/></p>
+</li>
+<li>
+<p>Next, change the directory to the “<strong>bluetuith</strong>” folder:<br/><br/></p>
+<pre><code>cd bluetuith
+</code></pre>
+</li>
+<li>
+<p>Finally, use the go toolchain to build the project:<br/><br/></p>
+<pre><code>go build main.go -o bluetuith-bin
+</code></pre>
+<p>After the build process, a binary named “<strong>bluetuith-bin</strong>” should be present in your current directory.</p>
+</li>
+</ul>
     </div>
 
         <nav>
         <ul class="Pager">
-            <li class=Pager--prev><a href="../Usage/Command_Line_Options.html">Previous</a></li>            <li class=Pager--next><a href="../Additional_Notes.html">Next</a></li>        </ul>
+            <li class=Pager--prev><a href="../index.html">Previous</a></li>            <li class=Pager--next><a href="../Installation/Windows.html">Next</a></li>        </ul>
     </nav>
     </article>
 

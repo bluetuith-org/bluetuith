@@ -62,7 +62,9 @@
         <div class="Collapsible__content" id="sidebar_content">
             <!-- Navigation -->
             <ul class='Nav'>
-<li class='Nav__item '><a href="../Installation.html">Installation</a></li>
+<li class='Nav__item  has-children'><a href="../Installation/Linux.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Installation</a><ul class='Nav'>
+<li class='Nav__item '><a href="../Installation/Linux.html">Linux</a></li>
+<li class='Nav__item '><a href="../Installation/Windows.html">Windows</a></li></ul></li>
 <li class='Nav__item '><a href="../Configuration.html">Configuration</a></li>
 <li class='Nav__item Nav__item--open has-children'><a href="../Usage/Command_Line_Options.html" class="Nav__item__link"><i class="Nav__arrow">&nbsp;</i>Usage</a><ul class='Nav'>
 <li class='Nav__item Nav__item--active'><a href="../Usage/Command_Line_Options.html">Command Line Options</a></li>
@@ -99,7 +101,7 @@
     <div class="Page__header">
         <h1><a href="../Usage/Command_Line_Options.html">Usage</a> <svg class="Page__header--separator" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 477.175 477.175"><path d="M360.73 229.075l-225.1-225.1c-5.3-5.3-13.8-5.3-19.1 0s-5.3 13.8 0 19.1l215.5 215.5-215.5 215.5c-5.3 5.3-5.3 13.8 0 19.1 2.6 2.6 6.1 4 9.5 4 3.4 0 6.9-1.3 9.5-4l225.1-225.1c5.3-5.2 5.3-13.8.1-19z"/></svg> <a href="../Usage/Command_Line_Options.html">Command Line Options</a></h1>
                         <span class="EditOn">
-            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/03_Usage/01_Command_Line_Options.md" target="_blank">
+            <a href="https://github.com/darkhz/bluetuith/blob/master/documentation/docs/03_Usage\01_Command_Line_Options.md" target="_blank">
                 Edit on GitHub            </a>
         </span>
             </div>
@@ -109,42 +111,18 @@
     <h4 class="TableOfContentsContainer__title">Table of Contents</h4>
     <div class="TableOfContentsContainer__content">
         <ul class="TableOfContents">
-<li>
-<a href="#adapter">adapter</a>
-</li>
-<li>
-<a href="#list-adapters">list-adapters</a>
-</li>
-<li>
-<a href="#adapter-states">adapter-states</a>
-</li>
-<li>
-<a href="#connect-bdaddr">connect-bdaddr</a>
-</li>
-<li>
-<a href="#confirm-on-quit">confirm-on-quit</a>
-</li>
-<li>
-<a href="#no-warning">no-warning</a>
-</li>
-<li>
-<a href="#receive-dir">receive-dir</a>
-</li>
-<li>
-<a href="#gsm-apn">gsm-apn</a>
-</li>
-<li>
-<a href="#gsm-number">gsm-number</a>
-</li>
-<li>
-<a href="#theme">theme</a>
-</li>
-<li>
-<a href="#generate">generate</a>
-</li>
-<li>
-<a href="#version">version</a>
-</li>
+<li><a href="#adapter">adapter</a></li>
+<li><a href="#list-adapters">list-adapters</a></li>
+<li><a href="#adapter-states">adapter-states</a></li>
+<li><a href="#connect-bdaddr">connect-bdaddr</a></li>
+<li><a href="#confirm-on-quit">confirm-on-quit</a></li>
+<li><a href="#no-warning">no-warning</a></li>
+<li><a href="#receive-dir">receive-dir</a></li>
+<li><a href="#gsm-apn">gsm-apn</a></li>
+<li><a href="#gsm-number">gsm-number</a></li>
+<li><a href="#theme">theme</a></li>
+<li><a href="#generate">generate</a></li>
+<li><a href="#version">version</a></li>
 </ul>    </div>
 </div>
 <p>The general usage syntax is:</p>
@@ -154,30 +132,18 @@
 <pre><code>bluetuith [&lt;option&gt; &lt;parameter&gt;]
 </code></pre>
 <ul>
-<li>
-<a href="#adapter">adapter</a>: Specify an adapter to use.</li>
-<li>
-<a href="#list-adapters">list-adapters</a>: List available adapters.</li>
-<li>
-<a href="#adapter-states">adapter-states</a>: Specify adapter states to enable/disable.</li>
-<li>
-<a href="#connect-bdaddr">connect-bdaddr</a>: Specify device address to connect.</li>
-<li>
-<a href="#confirm-on-quit">confirm-on-quit</a>: Ask for confirmation before quitting the application.</li>
-<li>
-<a href="#no-warning">no-warning</a>: Do not display warnings when the application has initialized.</li>
-<li>
-<a href="#receive-dir">receive-dir</a>: Specify a directory to store received files.</li>
-<li>
-<a href="#gsm-apn">gsm-apn</a>: Specify GSM APN to connect to.</li>
-<li>
-<a href="#gsm-number">gsm-number</a>: Specify GSM number to dial.</li>
-<li>
-<a href="#theme">theme</a>: Specify a theme in the HJSON format.</li>
-<li>
-<a href="#generate">generate</a>: Generate configuration.</li>
-<li>
-<a href="#version">version</a>: Print version information.</li>
+<li><a href="#adapter">adapter</a>: Specify an adapter to use.</li>
+<li><a href="#list-adapters">list-adapters</a>: List available adapters.</li>
+<li><a href="#adapter-states">adapter-states</a>: Specify adapter states to enable/disable.</li>
+<li><a href="#connect-bdaddr">connect-bdaddr</a>: Specify device address to connect.</li>
+<li><a href="#confirm-on-quit">confirm-on-quit</a>: Ask for confirmation before quitting the application.</li>
+<li><a href="#no-warning">no-warning</a>: Do not display warnings when the application has initialized.</li>
+<li><a href="#receive-dir">receive-dir</a>: Specify a directory to store received files.</li>
+<li><a href="#gsm-apn">gsm-apn</a>: Specify GSM APN to connect to.</li>
+<li><a href="#gsm-number">gsm-number</a>: Specify GSM number to dial.</li>
+<li><a href="#theme">theme</a>: Specify a theme in the HJSON format.</li>
+<li><a href="#generate">generate</a>: Generate configuration.</li>
+<li><a href="#version">version</a>: Print version information.</li>
 </ul>
 <div class="Admonition Admonition--warning"><p class="Admonition__title">set-theme and set-theme-config</p><p>As of v0.1.7, the set-theme and set-theme-config options are deprecated. Use the <code>--theme</code> command-line option or specify a theme directive within the configuration file.</p></div>
 <h2><a id="adapter" href="#adapter" class="Permalink" aria-hidden="true" title="Permalink">#</a>adapter</h2>
