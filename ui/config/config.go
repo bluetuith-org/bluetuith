@@ -155,7 +155,9 @@ func (c *Config) GenerateAndSave(currentCfg *koanf.Koanf) (bool, error) {
 		parsedOldCfg = true
 	}
 
-	data, err := hjson.Parser().Marshal(cfg.All())
+	cfg.Delete("generate")
+
+	data, err := hjson.Parser().Marshal(cfg.Raw())
 	if err != nil {
 		return parsedOldCfg, err
 	}

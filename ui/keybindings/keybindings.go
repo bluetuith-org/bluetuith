@@ -119,6 +119,17 @@ func (k *Keybindings) Data(key Key) *KeyData {
 	return k.keyData[key]
 }
 
+// Initialize initializes all the keybindings by context.
+func (k *Keybindings) Initialize() {
+	for keyName, key := range k.keyData {
+		if k.contextKeys[key.Context] == nil {
+			k.contextKeys[key.Context] = make(map[Keybinding]Key)
+		}
+
+		k.contextKeys[key.Context][key.Kb] = keyName
+	}
+}
+
 // Key returns the operation name for the provided keyID
 // and the keyboard event.
 func (k *Keybindings) Key(event *tcell.EventKey, keyContexts ...Context) Key {
@@ -355,13 +366,6 @@ func (k *Keybindings) checkBindings(keyType, key string, keyNames map[string]tce
 // initKeys initializes and stores the key types and contexts.
 func (k *Keybindings) initKeys() {
 	k.contextKeys = make(map[Context]map[Keybinding]Key)
-	for keyName, key := range k.keyData {
-		if k.contextKeys[key.Context] == nil {
-			k.contextKeys[key.Context] = make(map[Keybinding]Key)
-		}
-
-		k.contextKeys[key.Context][key.Kb] = keyName
-	}
 
 	k.navigationKeys = map[Key]Keybinding{
 		KeyNavigateUp:     {tcell.KeyUp, ' ', tcell.ModNone},

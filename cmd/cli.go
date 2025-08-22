@@ -136,6 +136,8 @@ func newApp() *cli.App {
 				Action: func(cliCtx *cli.Context, _ bool) error {
 					k := koanf.New(".")
 
+					cliCtx.Command.Name = "global"
+
 					conf := config.NewConfig()
 					if err := conf.Load(k, cliCtx); err != nil {
 						return err
