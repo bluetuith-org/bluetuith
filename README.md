@@ -8,9 +8,12 @@ It aims to be a replacement to most bluetooth managers, like blueman.
 
 This project is currently in the alpha stage.
 
-## Project status
-This project has currently been confirmed to be sponsored by the [NLnet](https://nlnet.nl/project/bluetuith/) foundation.
-The draft is complete, and the MoU has been signed. The work is now in progress.
+## Funding
+
+This project is funded through [NGI Zero Core](https://nlnet.nl/core), a fund established by [NLnet](https://nlnet.nl) with financial support from the European Commission's [Next Generation Internet](https://ngi.eu) program. Learn more at the [NLnet project page](https://nlnet.nl/project/bluetuith).
+
+[<img src="https://nlnet.nl/logo/banner.png" alt="NLnet foundation logo" width="20%" />](https://nlnet.nl)
+[<img src="https://nlnet.nl/image/logos/NGI0_tag.svg" alt="NGI Zero Logo" width="20%" />](https://nlnet.nl/core)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/bluetuith.svg)](https://repology.org/project/bluetuith/versions)
 
@@ -31,3 +34,4 @@ Please view the documentation for a list of operating requirements per platform.
 The documentation is now hosted [here](https://bluetuith-org.github.io/bluetuith/).
 
 The wiki is out-of-date.
+
