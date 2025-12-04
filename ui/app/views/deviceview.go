@@ -116,6 +116,12 @@ func (d *deviceView) showDetailedInfo() {
 		return
 	}
 
+	device, err = d.app.Session().Device(device.Address).Properties()
+	if err != nil {
+		d.status.ErrorMessage(err)
+		return
+	}
+
 	props := [][]string{
 		{"Name", device.Name},
 		{"Alias", device.Alias},
