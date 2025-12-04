@@ -16,6 +16,7 @@ builds:
     goos:
       - linux
       - windows
+      - darwin
 
     goarch:
       - arm
@@ -31,6 +32,10 @@ builds:
     ignore:
       - goos: windows
         goarch: arm
+      - goos: darwin
+        goarch: arm
+      - goos: darwin
+        goarch: 386
 
 archives:
   - id: foo
