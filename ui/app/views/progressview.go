@@ -428,7 +428,7 @@ func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 		if !psession.sessionRemoved {
 			delete(psession.transfers, transferProps.TransferID)
 
-			if !isComplete || len(psession.transfers) == 0 {
+			if isComplete && len(psession.transfers) == 0 {
 				psession.sessionRemoved = true
 
 				if psession.transferSession != nil {
@@ -448,7 +448,7 @@ func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 				continue
 			}
 
-			props, ok := cell.GetReference().(bluetooth.ObjectPushData)
+			props, ok := cell.GetReference().(bluetooth.ObjectPushEventData)
 			if !ok {
 				continue
 			}
@@ -478,27 +478,27 @@ func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 
 // transferData gets the file transfer properties and the progress data
 // from the current selection in the progress view.
-func (p *progressView) transferData() (bluetooth.ObjectPushData, *progressIndicator) {
+func (p *progressView) transferData() (bluetooth.ObjectPushEventData, *progressIndicator) {
 	row, _ := p.view.GetSelection()
 
 	pathCell := p.view.GetCell(row, 0)
 	if pathCell == nil {
-		return bluetooth.ObjectPushData{}, nil
+		return bluetooth.ObjectPushEventData{}, nil
 	}
 
 	progCell := p.view.GetCell(row, 2)
 	if progCell == nil {
-		return bluetooth.ObjectPushData{}, nil
+		return bluetooth.ObjectPushEventData{}, nil
 	}
 
-	props, ok := pathCell.GetReference().(bluetooth.ObjectPushData)
+	props, ok := pathCell.GetReference().(bluetooth.ObjectPushEventData)
 	if !ok {
-		return bluetooth.ObjectPushData{}, nil
+		return bluetooth.ObjectPushEventData{}, nil
 	}
 
 	progress, ok := progCell.GetReference().(*progressIndicator)
 	if !ok {
-		return bluetooth.ObjectPushData{}, nil
+		return bluetooth.ObjectPushEventData{}, nil
 	}
 
 	return props, progress
