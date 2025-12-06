@@ -1,17 +1,9 @@
 # Requirements
 The `haraltd` daemon is required to be downloaded and started.
-Download it from [here](https://github.com/bluetuith-org/haraltd).
-Once downloaded and extracted from the archive:
-- Double-click on the `haraltd.exe` executable
-- A SmartScreen window will pop-up, since the executable is currently not signed. Press "Allow anyways".
-- A UAC popup will show, press "Yes"
-- The daemon will launch, a notification will pop-up and an icon will be displayed in the taskbar.
-- To stop the daemon, right-click the same icon, and press the "Stop" option.
 
-Alternatively, to start it from Powershell or CMD.exe, type:
-```ps
-<path-to-downloaded-executable>\haraltd server start
-```
+Follow the Windows specific instructions [here](https://github.com/bluetuith-org/haraltd?tab=readme-ov-file#windows).
+
+After following the instructions, double-click on "Haraltd.exe", and the Haraltd icon should popup in the task bar.
 
 # Installation
 To install and run **bluetuith**:

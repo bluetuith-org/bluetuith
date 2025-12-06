@@ -1,0 +1,1 @@
+export const __webpack_esm_id__=498;export const __webpack_esm_ids__=[498];export const __webpack_esm_modules__={2498:(_,e,c)=>{c.d(e,{createArchitectureServices:()=>s.S});var s=c(3009);c(1272)}};
