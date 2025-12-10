@@ -8,4 +8,4 @@ After following the instructions, double-click on "Haraltd.app", and a Bluetooth
 # Installation
 To install and run **bluetuith**:
 - Download a release matching the architecture of the operating system, extract the archive
-- Open Powershell or CMD, and run: `bluetuith`
+- Open the terminal, and run: `bluetuith`
