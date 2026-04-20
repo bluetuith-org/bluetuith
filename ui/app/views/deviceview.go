@@ -249,18 +249,33 @@ func (d *deviceView) getRowByAddress(address bluetooth.MacAddress) (int, bool) {
 func (d *deviceView) setInfo(row int, device bluetooth.DeviceData) {
 	var sb strings.Builder
 
-	name := device.Name
-	if name == "" {
-		name = device.Address.String()
-	}
-	sb.WriteString(name)
-	sb.WriteString(" (")
-	if device.Alias != "" && device.Alias != device.Name {
-		sb.WriteString(theme.ColorWrap(theme.ThemeDeviceAlias, device.Alias))
-		sb.WriteString(", ")
-	}
-	sb.WriteString(theme.ColorWrap(theme.ThemeDeviceType, device.Type))
-	sb.WriteString(")")
+	primary := device.Name
+secondary := ""
+
+if device.Alias != "" {
+    primary = device.Alias
+
+    // Only show actual name if it's different
+    if device.Name != "" && device.Name != device.Alias {
+        secondary = device.Name
+    }
+}
+
+if primary == "" {
+    primary = device.Address.String()
+}
+
+sb.WriteString(theme.ColorWrap(theme.ThemeDeviceAlias, primary))
+
+if secondary != "" {
+    sb.WriteString(" (")
+    sb.WriteString(secondary)
+    sb.WriteString(")")
+}
+
+sb.WriteString(" (")
+sb.WriteString(theme.ColorWrap(theme.ThemeDeviceType, device.Type))
+sb.WriteString(")")
 
 	nameDisplay := sb.String()
 	nameColor := theme.ThemeDevice
