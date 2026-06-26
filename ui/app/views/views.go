@@ -291,7 +291,8 @@ func horizontalLine() *tview.Box {
 		SetBackgroundColor(tcell.ColorDefault).
 		SetDrawFunc(func(
 			screen tcell.Screen,
-			x, y, width, height int) (int, int, int, int) {
+			x, y, width, height int,
+		) (int, int, int, int) {
 			centerY := y + height/2
 			for cx := x; cx < x+width; cx++ {
 				screen.SetContent(

@@ -37,7 +37,7 @@ func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props blue
 		return nil
 	}
 
-	device, err := a.v.app.Session().Device(props.Address).Properties()
+	device, err := a.v.app.Session().Device(props.DeviceAddress).Properties()
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props blue
 		filename = filepath.Base(props.Filename)
 	}
 
-	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Accept file '%s' (y/n/a)", device.Name, filename))
+	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Accept file '%s' (y/n/a)", getDeviceDisplayName(device.DeviceEventData), filename))
 	switch reply {
 	case "a":
 		a.alwaysAuthorize = true
@@ -62,7 +62,7 @@ func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props blue
 }
 
 // DisplayPinCode displays the pincode from the remote device to the user during a pairing authorization session.
-func (a *authorizer) DisplayPinCode(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress, pincode string) error {
+func (a *authorizer) DisplayPinCode(timeout bluetooth.AuthTimeout, pincode string, address bluetooth.DeviceAddress) error {
 	if !a.initialized {
 		return nil
 	}
@@ -74,7 +74,7 @@ func (a *authorizer) DisplayPinCode(timeout bluetooth.AuthTimeout, address bluet
 
 	msg := fmt.Sprintf(
 		"The pincode for [::bu]%s[-:-:-] is:\n\n[::b]%s[-:-:-]",
-		device.Name, pincode,
+		getDeviceDisplayName(device.DeviceEventData), pincode,
 	)
 
 	modal := a.generateDisplayModal(address, "pincode", "Pin Code", msg)
@@ -87,7 +87,7 @@ func (a *authorizer) DisplayPinCode(timeout bluetooth.AuthTimeout, address bluet
 // This can be called multiple times, since each time the user enters a number on the remote device, this function
 // is called with the updated 'entered' value.
 // TODO: Handle multiple calls/draws when this function is called.
-func (a *authorizer) DisplayPasskey(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress, passkey uint32, entered uint16) error {
+func (a *authorizer) DisplayPasskey(timeout bluetooth.AuthTimeout, passkey uint32, entered uint16, address bluetooth.DeviceAddress) error {
 	if !a.initialized {
 		return nil
 	}
@@ -99,7 +99,7 @@ func (a *authorizer) DisplayPasskey(timeout bluetooth.AuthTimeout, address bluet
 
 	msg := fmt.Sprintf(
 		"The passkey for [::bu]%s[-:-:-] is:\n\n[::b]%d[-:-:-]",
-		device.Name, passkey,
+		getDeviceDisplayName(device.DeviceEventData), passkey,
 	)
 	if entered > 0 {
 		msg += fmt.Sprintf("\n\nYou have entered %d", entered)
@@ -112,7 +112,7 @@ func (a *authorizer) DisplayPasskey(timeout bluetooth.AuthTimeout, address bluet
 }
 
 // ConfirmPasskey asks the user to authorize the pairing request using the provided passkey.
-func (a *authorizer) ConfirmPasskey(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress, passkey uint32) error {
+func (a *authorizer) ConfirmPasskey(timeout bluetooth.AuthTimeout, passkey uint32, address bluetooth.DeviceAddress) error {
 	if !a.initialized {
 		return nil
 	}
@@ -124,7 +124,7 @@ func (a *authorizer) ConfirmPasskey(timeout bluetooth.AuthTimeout, address bluet
 
 	msg := fmt.Sprintf(
 		"Confirm passkey for [::bu]%s[-:-:-] is \n\n[::b]%d[-:-:-]",
-		device.Name, passkey,
+		getDeviceDisplayName(device.DeviceEventData), passkey,
 	)
 
 	modal := a.generateConfirmModal(address, "passkey-confirm", "Passkey Confirmation", msg)
@@ -139,7 +139,7 @@ func (a *authorizer) ConfirmPasskey(timeout bluetooth.AuthTimeout, address bluet
 }
 
 // AuthorizePairing asks the user to authorize a pairing request.
-func (a *authorizer) AuthorizePairing(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress) error {
+func (a *authorizer) AuthorizePairing(timeout bluetooth.AuthTimeout, address bluetooth.DeviceAddress) error {
 	if !a.initialized {
 		return nil
 	}
@@ -148,7 +148,7 @@ func (a *authorizer) AuthorizePairing(timeout bluetooth.AuthTimeout, address blu
 	if err != nil {
 		return err
 	}
-	msg := fmt.Sprintf("Confirm pairing with [::bu]%s[-:-:-]", device.Name)
+	msg := fmt.Sprintf("Confirm pairing with [::bu]%s[-:-:-]", getDeviceDisplayName(device.DeviceEventData))
 
 	modal := a.generateConfirmModal(address, "pairing-confirm", "Pairing Confirmation", msg)
 	reply := modal.getReply(timeout)
@@ -162,18 +162,18 @@ func (a *authorizer) AuthorizePairing(timeout bluetooth.AuthTimeout, address blu
 }
 
 // AuthorizeService asks the user to authorize whether a specific Bluetooth Profile is allowed to be used.
-func (a *authorizer) AuthorizeService(timeout bluetooth.AuthTimeout, address bluetooth.MacAddress, profileUUID uuid.UUID) error {
+func (a *authorizer) AuthorizeService(timeout bluetooth.AuthTimeout, profileUUID uuid.UUID, address bluetooth.DeviceAddress) error {
 	if !a.initialized || a.alwaysAuthorize {
 		return nil
 	}
 
-	serviceName := bluetooth.ServiceType(profileUUID.String())
+	serviceName := bluetooth.ServiceType(profileUUID)
 	device, err := a.v.app.Session().Device(address).Properties()
 	if err != nil {
 		return err
 	}
 
-	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Authorize service '%s' (y/n/a)", device.Name, serviceName))
+	reply := a.v.status.waitForInput(timeout, fmt.Sprintf("[::bu]%s[-:-:-]: Authorize service '%s' (y/n/a)", getDeviceDisplayName(device.DeviceEventData), serviceName))
 	switch reply {
 	case "a":
 		a.alwaysAuthorize = true
@@ -187,11 +187,11 @@ func (a *authorizer) AuthorizeService(timeout bluetooth.AuthTimeout, address blu
 }
 
 // generateConfirmModal generates a confirmation modal with the provided parameters.
-func (a *authorizer) generateConfirmModal(address bluetooth.MacAddress, name, title, msg string) *confirmModalView {
-	return a.v.modals.newConfirmModal(name+":"+address.String(), title, msg)
+func (a *authorizer) generateConfirmModal(address bluetooth.DeviceAddress, name, title, msg string) *confirmModalView {
+	return a.v.modals.newConfirmModal(name+":"+address.Address.String(), title, msg)
 }
 
 // generateDisplayModal generates a display modal with the provided parameters.
-func (a *authorizer) generateDisplayModal(address bluetooth.MacAddress, name, title, msg string) *displayModalView {
-	return a.v.modals.newDisplayModal(name+":"+address.String(), title, msg)
+func (a *authorizer) generateDisplayModal(address bluetooth.DeviceAddress, name, title, msg string) *displayModalView {
+	return a.v.modals.newDisplayModal(name+":"+address.Address.String(), title, msg)
 }

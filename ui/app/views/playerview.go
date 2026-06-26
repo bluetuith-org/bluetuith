@@ -28,7 +28,7 @@ type mediaPlayer struct {
 	stopEvent, buttonEvent chan struct{}
 
 	currentMedia bluetooth.MediaPlayer
-	address      bluetooth.MacAddress
+	address      bluetooth.DeviceAddress
 
 	*Views
 
@@ -76,14 +76,14 @@ func (m *mediaPlayer) show() {
 		return
 	}
 
-	m.currentMedia = m.app.Session().MediaPlayer(device.Address)
+	m.currentMedia = m.app.Session().MediaPlayer(device.DeviceAddress)
 	properties, err := m.currentMedia.Properties()
 	if err != nil {
 		m.status.ErrorMessage(err)
 		return
 	}
 
-	m.address = device.Address
+	m.address = device.DeviceAddress
 
 	go m.updateLoop(device, properties)
 }
@@ -104,7 +104,7 @@ func (m *mediaPlayer) close() {
 }
 
 // closeForDevice closes the media player for the specific device.
-func (m *mediaPlayer) closeForDevice(deviceAddress bluetooth.MacAddress) {
+func (m *mediaPlayer) closeForDevice(deviceAddress bluetooth.DeviceAddress) {
 	if !m.isSupported.Load() || !m.isOpen.Load() || m.address != deviceAddress {
 		return
 	}
@@ -223,7 +223,9 @@ func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.Me
 	}
 	defer mediaSub.Unsubscribe()
 
-	elements := m.setup(device.Name)
+	deviceName := getDeviceDisplayName(device.DeviceEventData)
+
+	elements := m.setup(deviceName)
 	go m.app.QueueDraw(func() {
 		m.help.swapStatusHelp(elements.player, true)
 	})

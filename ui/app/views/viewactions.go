@@ -104,7 +104,10 @@ func (v *viewActions) power(set ...string) bool {
 		return false
 	}
 
-	powered := props.Powered
+	powered, ok := props.Powered.Get()
+	if !ok {
+		return false
+	}
 
 	if set != nil {
 		state := set[0] == "yes"
@@ -126,7 +129,7 @@ func (v *viewActions) power(set ...string) bool {
 		poweredText = "on"
 	}
 
-	v.rv.status.InfoMessage(props.UniqueName+" is powered "+poweredText, false)
+	v.rv.status.InfoMessage(getAdapterDisplayName(props)+" is powered "+poweredText, false)
 
 	v.rv.menu.toggleItemByKey(keybindings.KeyAdapterTogglePower, !powered)
 
@@ -143,7 +146,10 @@ func (v *viewActions) discoverable(set ...string) bool {
 		return false
 	}
 
-	discoverable := props.Discoverable
+	discoverable, ok := props.Discoverable.Get()
+	if !ok {
+		return false
+	}
 
 	if set != nil {
 		state := set[0] == "yes"
@@ -165,7 +171,7 @@ func (v *viewActions) discoverable(set ...string) bool {
 		discoverableText = "not discoverable"
 	}
 
-	v.rv.status.InfoMessage(props.UniqueName+" is "+discoverableText, false)
+	v.rv.status.InfoMessage(getAdapterDisplayName(props)+" is "+discoverableText, false)
 
 	v.rv.menu.toggleItemByKey(keybindings.KeyAdapterToggleDiscoverable, !discoverable)
 
@@ -182,7 +188,10 @@ func (v *viewActions) pairable(set ...string) bool {
 		return false
 	}
 
-	pairable := props.Pairable
+	pairable, ok := props.Pairable.Get()
+	if !ok {
+		return false
+	}
 
 	if set != nil {
 		state := set[0] == "yes"
@@ -204,7 +213,7 @@ func (v *viewActions) pairable(set ...string) bool {
 		pairableText = "not pairable"
 	}
 
-	v.rv.status.InfoMessage(props.UniqueName+" is "+pairableText, false)
+	v.rv.status.InfoMessage(getAdapterDisplayName(props)+" is "+pairableText, false)
 
 	v.rv.menu.toggleItemByKey(keybindings.KeyAdapterTogglePairable, !pairable)
 
@@ -219,7 +228,10 @@ func (v *viewActions) scan(set ...string) bool {
 		return false
 	}
 
-	discover := props.Discovering
+	discover, ok := props.Discovering.Get()
+	if !ok {
+		return false
+	}
 
 	if set != nil {
 		state := set[0] == "yes"
@@ -231,13 +243,13 @@ func (v *viewActions) scan(set ...string) bool {
 	}
 
 	if !discover {
-		if err := v.rv.app.Session().Adapter(props.Address).StartDiscovery(); err != nil {
+		if err := v.rv.app.Session().Adapter(props.AdapterAddress).StartDiscovery(); err != nil {
 			v.rv.status.ErrorMessage(err)
 			return false
 		}
 		v.rv.status.InfoMessage("Scanning for devices...", true)
 	} else {
-		if err := v.rv.app.Session().Adapter(props.Address).StopDiscovery(); err != nil {
+		if err := v.rv.app.Session().Adapter(props.AdapterAddress).StopDiscovery(); err != nil {
 			v.rv.status.ErrorMessage(err)
 			return false
 		}
@@ -276,7 +288,7 @@ func (v *viewActions) quit(_ ...string) bool {
 
 	if adapters, err := v.rv.app.Session().Adapters(); err != nil {
 		for _, adapter := range adapters {
-			v.rv.app.Session().Adapter(adapter.Address).StopDiscovery()
+			v.rv.app.Session().Adapter(adapter.AdapterAddress).StopDiscovery()
 		}
 	}
 
@@ -285,61 +297,79 @@ func (v *viewActions) quit(_ ...string) bool {
 	return true
 }
 
-// initPower _s the oncreate handler for the power submenu option.
+// initPower creates the oncreate handler for the power submenu option.
 func (v *viewActions) initPower(_ ...string) bool {
 	props, err := v.rv.adapter.currentSession().Properties()
 
-	return err == nil && props.Powered
+	prop, ok := props.Powered.Get()
+	if !ok {
+		return false
+	}
+	return err == nil && ok && prop
 }
 
-// initDiscoverable _s the oncreate handler for the discoverable submenu option
+// initDiscoverable creates the oncreate handler for the discoverable submenu option
 func (v *viewActions) initDiscoverable(_ ...string) bool {
 	props, err := v.rv.adapter.currentSession().Properties()
 
-	return err == nil && props.Discoverable
+	prop, ok := props.Discoverable.Get()
+	if !ok {
+		return false
+	}
+	return err == nil && ok && prop
 }
 
-// initPairable _s the oncreate handler for the pairable submenu option.
+// initPairable creates the oncreate handler for the pairable submenu option.
 func (v *viewActions) initPairable(_ ...string) bool {
 	props, err := v.rv.adapter.currentSession().Properties()
 
-	return err == nil && props.Pairable
+	prop, ok := props.Pairable.Get()
+	if !ok {
+		return false
+	}
+	return err == nil && ok && prop
 }
 
-// initConnect _s the oncreate handler for the connect submenu option.
+// initConnect creates the oncreate handler for the connect submenu option.
 func (v *viewActions) initConnect(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	return device.Connected
+	connected, ok := device.Connected.Get()
+
+	return ok && connected
 }
 
-// initTrust _s the oncreate handler for the trust submenu option.
+// initTrust creates the oncreate handler for the trust submenu option.
 func (v *viewActions) initTrust(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	return device.Trusted
+	trusted, ok := device.Trusted.Get()
+
+	return ok && trusted
 }
 
-// initBlock _s the oncreate handler for the block submenu option.
+// initBlock creates the oncreate handler for the block submenu option.
 func (v *viewActions) initBlock(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	return device.Blocked
+	blocked, ok := device.Blocked.Get()
+
+	return ok && blocked
 }
 
-// visibleSend _s the visible handler for the send submenu option.
+// visibleSend creates the visible handler for the send submenu option.
 func (v *viewActions) visibleSend(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
@@ -347,10 +377,10 @@ func (v *viewActions) visibleSend(_ ...string) bool {
 		device.HaveService(bluetooth.ObexObjpushServiceClass)
 }
 
-// visibleNetwork _s the visible handler for the network submenu option.
+// visibleNetwork creates the visible handler for the network submenu option.
 func (v *viewActions) visibleNetwork(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
@@ -360,10 +390,10 @@ func (v *viewActions) visibleNetwork(_ ...string) bool {
 			device.HaveService(bluetooth.DialupNetServiceClass))
 }
 
-// visibleProfile _s the visible handler for the audio profiles submenu option.
+// visibleProfile creates the visible handler for the audio profiles submenu option.
 func (v *viewActions) visibleProfile(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
@@ -371,10 +401,10 @@ func (v *viewActions) visibleProfile(_ ...string) bool {
 		device.HaveService(bluetooth.AudioSinkServiceClass)
 }
 
-// visiblePlayer _s the visible handler for the media player submenu option.
+// visiblePlayer creates the visible handler for the media player submenu option.
 func (v *viewActions) visiblePlayer(_ ...string) bool {
 	device := v.rv.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
@@ -402,44 +432,49 @@ func (v *viewActions) connect(set ...string) bool {
 		}
 	} else {
 		device = v.rv.device.getSelection(true)
-		if device.Address.IsNil() {
+		if device.IsNil() {
 			return false
 		}
 	}
 
+	connected, ok := device.Connected.Get()
+	if !ok {
+		return false
+	}
+
 	disconnectFunc := func() {
-		if err := v.rv.app.Session().Device(device.Address).Disconnect(); err != nil {
+		if err := v.rv.app.Session().Device(device.DeviceAddress).Disconnect(); err != nil {
 			v.rv.status.ErrorMessage(err)
 			return
 		}
 
-		v.rv.player.closeForDevice(device.Address)
+		v.rv.player.closeForDevice(device.DeviceAddress)
 	}
 
 	connectFunc := func() {
-		v.rv.status.InfoMessage("Connecting to "+device.Name, true)
-		if err := v.rv.app.Session().Device(device.Address).Connect(); err != nil {
+		v.rv.status.InfoMessage("Connecting to "+getDeviceDisplayName(device.DeviceEventData), true)
+		if err := v.rv.app.Session().Device(device.DeviceAddress).Connect(); err != nil {
 			v.rv.status.ErrorMessage(err)
 			return
 		}
-		v.rv.status.InfoMessage("Connected to "+device.Name, false)
+		v.rv.status.InfoMessage("Connected to "+getDeviceDisplayName(device.DeviceEventData), false)
 	}
 
-	if !device.Connected {
+	if !connected {
 		v.rv.op.startOperation(
 			connectFunc,
 			func() {
 				disconnectFunc()
-				v.rv.status.InfoMessage("Cancelled connection to "+device.Name, false)
+				v.rv.status.InfoMessage("Cancelled connection to "+getDeviceDisplayName(device.DeviceEventData), false)
 			},
 		)
 	} else {
-		v.rv.status.InfoMessage("Disconnecting from "+device.Name, true)
+		v.rv.status.InfoMessage("Disconnecting from "+getDeviceDisplayName(device.DeviceEventData), true)
 		disconnectFunc()
-		v.rv.status.InfoMessage("Disconnected from "+device.Name, false)
+		v.rv.status.InfoMessage("Disconnected from "+getDeviceDisplayName(device.DeviceEventData), false)
 	}
 
-	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceConnect, !device.Connected)
+	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceConnect, !connected)
 
 	return true
 }
@@ -447,29 +482,34 @@ func (v *viewActions) connect(set ...string) bool {
 // pair retrieves the selected device, and attempts to pair with it.
 func (v *viewActions) pair(_ ...string) bool {
 	device := v.rv.device.getSelection(true)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
-	if device.Paired {
-		v.rv.status.InfoMessage(device.Name+" is already paired", false)
+
+	paired, ok := device.Paired.Get()
+	if !ok {
+		v.rv.status.ErrorMessage(errors.New("cannot determine if the device is paired"))
+	}
+	if ok && paired {
+		v.rv.status.InfoMessage(getDeviceDisplayName(device.DeviceEventData)+" is already paired", false)
 		return false
 	}
 
 	v.rv.op.startOperation(
 		func() {
-			v.rv.status.InfoMessage("Pairing with "+device.Name, true)
-			if err := v.rv.app.Session().Device(device.Address).Pair(); err != nil {
+			v.rv.status.InfoMessage("Pairing with "+getDeviceDisplayName(device.DeviceEventData), true)
+			if err := v.rv.app.Session().Device(device.DeviceAddress).Pair(); err != nil {
 				v.rv.status.ErrorMessage(err)
 				return
 			}
-			v.rv.status.InfoMessage("Paired with "+device.Name, false)
+			v.rv.status.InfoMessage("Paired with "+getDeviceDisplayName(device.DeviceEventData), false)
 		},
 		func() {
-			if err := v.rv.app.Session().Device(device.Address).CancelPairing(); err != nil {
+			if err := v.rv.app.Session().Device(device.DeviceAddress).CancelPairing(); err != nil {
 				v.rv.status.ErrorMessage(err)
 				return
 			}
-			v.rv.status.InfoMessage("Cancelled pairing with "+device.Name, false)
+			v.rv.status.InfoMessage("Cancelled pairing with "+getDeviceDisplayName(device.DeviceEventData), false)
 		},
 	)
 
@@ -479,16 +519,21 @@ func (v *viewActions) pair(_ ...string) bool {
 // trust retrieves the selected device, and toggles its trust property.
 func (v *viewActions) trust(_ ...string) bool {
 	device := v.rv.device.getSelection(true)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	if err := v.rv.app.Session().Device(device.Address).SetTrusted(!device.Trusted); err != nil {
-		v.rv.status.ErrorMessage(errors.New("cannot set trusted property for " + device.Name))
+	trusted, ok := device.Trusted.Get()
+	if !ok {
 		return false
 	}
 
-	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceTrust, !device.Trusted)
+	if err := v.rv.app.Session().Device(device.DeviceAddress).SetTrusted(!trusted); err != nil {
+		v.rv.status.ErrorMessage(errors.New("cannot set trusted property for " + getDeviceDisplayName(device.DeviceEventData)))
+		return false
+	}
+
+	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceTrust, !trusted)
 
 	return true
 }
@@ -496,16 +541,21 @@ func (v *viewActions) trust(_ ...string) bool {
 // block retrieves the selected device, and toggles its block property.
 func (v *viewActions) block(_ ...string) bool {
 	device := v.rv.device.getSelection(true)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	if err := v.rv.app.Session().Device(device.Address).SetBlocked(!device.Blocked); err != nil {
-		v.rv.status.ErrorMessage(errors.New("cannot set blocked property for " + device.Name))
+	blocked, ok := device.Blocked.Get()
+	if !ok {
 		return false
 	}
 
-	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceBlock, !device.Blocked)
+	if err := v.rv.app.Session().Device(device.DeviceAddress).SetBlocked(!blocked); err != nil {
+		v.rv.status.ErrorMessage(errors.New("cannot set blocked property for " + getDeviceDisplayName(device.DeviceEventData)))
+		return false
+	}
+
+	v.rv.menu.toggleItemByKey(keybindings.KeyDeviceBlock, !blocked)
 
 	return true
 }
@@ -514,8 +564,28 @@ func (v *viewActions) block(_ ...string) bool {
 // to the target device.
 func (v *viewActions) send(_ ...string) bool {
 	device := v.rv.device.getSelection(true)
-	if !device.Paired || !device.Connected {
-		v.rv.status.ErrorMessage(errors.New(device.Name + " is not paired and/or connected"))
+
+	var displayErr error
+	defer func() {
+		if displayErr != nil {
+			v.rv.status.ErrorMessage(displayErr)
+		}
+	}()
+
+	paired, ok := device.Paired.Get()
+	if !ok {
+		displayErr = errors.New("cannot determine if the device is paired")
+		return false
+	}
+
+	connected, ok := device.Connected.Get()
+	if !ok {
+		displayErr = errors.New("cannot determine if the device is connected")
+		return false
+	}
+
+	if !paired || !connected {
+		displayErr = errors.New(getDeviceDisplayName(device.DeviceEventData) + " is not paired and/or connected")
 		return false
 	}
 
@@ -524,7 +594,7 @@ func (v *viewActions) send(_ ...string) bool {
 	v.rv.op.startOperation(
 		func() {
 			v.rv.status.InfoMessage("Initializing OBEX Session()..", true)
-			oppSession := v.rv.app.Session().Obex(device.Address).ObjectPush()
+			oppSession := v.rv.app.Session().Obex(device.DeviceAddress).ObjectPush()
 
 			err := oppSession.CreateSession(ctx)
 			if err != nil {
@@ -559,7 +629,7 @@ func (v *viewActions) send(_ ...string) bool {
 				proplist = append(proplist, props)
 			}
 
-			v.rv.progress.startTransfer(device.Address, oppSession, proplist)
+			v.rv.progress.startTransfer(device.DeviceAddress, oppSession, proplist)
 		},
 		func() {
 			cancel()
@@ -614,20 +684,20 @@ func (v *viewActions) info(_ ...string) bool {
 // remove retrieves the selected device, and removes it from the adapter.
 func (v *viewActions) remove(_ ...string) bool {
 	device := v.rv.device.getSelection(true)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return false
 	}
 
-	if txt := v.rv.status.SetInput("Remove " + device.Name + " (y/n)?"); txt != "y" {
+	if txt := v.rv.status.SetInput("Remove " + getDeviceDisplayName(device.DeviceEventData) + " (y/n)?"); txt != "y" {
 		return false
 	}
 
-	if err := v.rv.app.Session().Device(device.Address).Remove(); err != nil {
+	if err := v.rv.app.Session().Device(device.DeviceAddress).Remove(); err != nil {
 		v.rv.status.ErrorMessage(err)
 		return false
 	}
 
-	v.rv.status.InfoMessage("Removed "+device.Name, false)
+	v.rv.status.InfoMessage("Removed "+getDeviceDisplayName(device.DeviceEventData), false)
 
 	return true
 }

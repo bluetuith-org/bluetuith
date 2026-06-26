@@ -106,7 +106,7 @@ func (v *Values) validateDeviceExists(session bluetooth.Session) error {
 		}
 
 		adapterlist = append(adapterlist, adapter.UniqueName)
-		devices, err := session.Adapter(adapter.Address).Devices()
+		devices, err := session.Adapter(adapter.AdapterAddress).Devices()
 		if err != nil {
 			continue
 		}

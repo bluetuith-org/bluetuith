@@ -35,7 +35,7 @@ type progressView struct {
 
 	total atomic.Uint32
 
-	sessions *xsync.MapOf[bluetooth.MacAddress, *progressViewSession]
+	sessions *xsync.MapOf[bluetooth.DeviceAddress, *progressViewSession]
 
 	*Views
 }
@@ -59,7 +59,7 @@ type progressIndicator struct {
 	recv, drawn bool
 	status      bluetooth.ObjectPushStatus
 
-	deviceAddress bluetooth.MacAddress
+	deviceAddress bluetooth.DeviceAddress
 
 	appDrawFunc func(func())
 }
@@ -139,7 +139,7 @@ func (p *progressView) Initialize() error {
 	p.status.AddPage(progressPage.String(), p.statusProgress, true, false)
 
 	p.isSupported.Store(true)
-	p.sessions = xsync.NewMapOf[bluetooth.MacAddress, *progressViewSession]()
+	p.sessions = xsync.NewMapOf[bluetooth.DeviceAddress, *progressViewSession]()
 
 	go p.monitorTransfers()
 
@@ -206,7 +206,7 @@ func (p *progressView) newIndicator(props bluetooth.ObjectPushData, recv bool) *
 	title := fmt.Sprintf(" [::b]%s %s[-:-:-]", progressText, name)
 
 	progress.recv = recv
-	progress.deviceAddress = props.Address
+	progress.deviceAddress = props.DeviceAddress
 	progress.appDrawFunc = p.app.QueueDraw
 
 	progress.desc = tview.NewTableCell(title).
@@ -249,9 +249,10 @@ func (p *progressView) drawIndicator(progress *progressIndicator, props bluetoot
 		p.statusProgress.SetCell(0, 0, progress.desc)
 		p.statusProgress.SetCell(0, 1, progress.progress)
 
-		p.view.SetCell(rows+1, 0, tview.NewTableCell("#"+strconv.FormatUint(uint64(count), 10)).
-			SetReference(props).
-			SetAlign(tview.AlignCenter),
+		p.view.SetCell(
+			rows+1, 0, tview.NewTableCell("#"+strconv.FormatUint(uint64(count), 10)).
+				SetReference(props).
+				SetAlign(tview.AlignCenter),
 		)
 		p.view.SetCell(rows+1, 1, progress.desc)
 		p.view.SetCell(rows+1, 2, progress.progress)
@@ -364,7 +365,7 @@ Transfer:
 // and displays the progress on the screen. If the optional path parameter is provided, it means that
 // a file is being received, and on transfer completion, the received file should be moved to a user-accessible
 // directory.
-func (p *progressView) startTransfer(address bluetooth.MacAddress, session bluetooth.ObexObjectPush, files []bluetooth.ObjectPushData) {
+func (p *progressView) startTransfer(address bluetooth.DeviceAddress, session bluetooth.ObexObjectPush, files []bluetooth.ObjectPushData) {
 	psession := &progressViewSession{transferSession: session}
 	psession.transfers = make(map[bluetooth.ObjectPushTransferID]struct{})
 	for _, f := range files {
@@ -423,7 +424,7 @@ func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 	isComplete := transferProps.Status == bluetooth.TransferComplete
 	path := transferProps.Filename
 
-	if psession, ok := p.sessions.Load(transferProps.Address); ok {
+	if psession, ok := p.sessions.Load(transferProps.DeviceAddress); ok {
 		psession.mu.Lock()
 		if !psession.sessionRemoved {
 			delete(psession.transfers, transferProps.TransferID)
@@ -435,7 +436,7 @@ func (p *progressView) removeProgress(transferProps bluetooth.ObjectPushData) {
 					go psession.transferSession.RemoveSession()
 				}
 
-				p.sessions.Delete(transferProps.Address)
+				p.sessions.Delete(transferProps.DeviceAddress)
 			}
 		}
 		psession.mu.Unlock()
@@ -526,7 +527,7 @@ func savefile(path string, userpath string) error {
 		userpath = filepath.Join(homedir, "bluetuith")
 
 		if _, err := os.Stat(userpath); err != nil {
-			err = os.Mkdir(userpath, 0700)
+			err = os.Mkdir(userpath, 0o700)
 			if err != nil {
 				return err
 			}

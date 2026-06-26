@@ -2,7 +2,7 @@ package views
 
 import (
 	"errors"
-	"sort"
+	"slices"
 
 	"go.uber.org/atomic"
 
@@ -21,7 +21,7 @@ type audioProfilesView struct {
 
 // audioDevice describes a single audio device.
 type audioDevice struct {
-	address bluetooth.MacAddress
+	address bluetooth.DeviceAddress
 	profile bluetooth.AudioProfile
 }
 
@@ -45,17 +45,21 @@ func (a *audioProfilesView) audioProfiles() {
 	}
 
 	device := a.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return
 	}
 
-	profiles, err := a.app.Session().MediaPlayer(device.Address).AudioProfiles()
+	profiles, err := a.app.Session().MediaPlayer(device.DeviceAddress).AudioProfiles()
 	if err != nil {
 		a.status.ErrorMessage(err)
 		return
 	}
-	sort.Slice(profiles, func(i, _ int) bool {
-		return profiles[i].Name == "off"
+	slices.SortFunc(profiles, func(i, _ bluetooth.AudioProfile) int {
+		if i.Name == "off" {
+			return 0
+		}
+
+		return 1
 	})
 
 	a.menu.drawContextMenu(
@@ -64,7 +68,6 @@ func (a *audioProfilesView) audioProfiles() {
 			row, _ := profileMenu.GetSelection()
 
 			a.setProfile(profileMenu, row, 0)
-
 		}, nil,
 		func(profileMenu *tview.Table) (int, int) {
 			var width, index int
@@ -82,16 +85,18 @@ func (a *audioProfilesView) audioProfiles() {
 
 				profileMenu.SetCellSimple(row, 0, "")
 
-				profileMenu.SetCell(row, 1, tview.NewTableCell(profile.Description).
-					SetExpansion(1).
-					SetReference(audioDevice{device.Address, profile}).
-					SetAlign(tview.AlignLeft).
-					SetOnClickedFunc(a.setProfile).
-					SetTextColor(theme.GetColor(theme.ThemeText)).
-					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeText)).
-						Background(theme.BackgroundColor(theme.ThemeText)),
-					),
+				profileMenu.SetCell(
+					row, 1, tview.NewTableCell(profile.Description).
+						SetExpansion(1).
+						SetReference(audioDevice{device.DeviceAddress, profile}).
+						SetAlign(tview.AlignLeft).
+						SetOnClickedFunc(a.setProfile).
+						SetTextColor(theme.GetColor(theme.ThemeText)).
+						SetSelectedStyle(
+							tcell.Style{}.
+								Foreground(theme.GetColor(theme.ThemeText)).
+								Background(theme.BackgroundColor(theme.ThemeText)),
+						),
 				)
 
 			}
@@ -134,13 +139,15 @@ func (a *audioProfilesView) markActiveProfile(profileMenu *tview.Table, index ..
 			activeIndicator = ""
 		}
 
-		profileMenu.SetCell(i, 0, tview.NewTableCell(activeIndicator).
-			SetSelectable(false).
-			SetTextColor(theme.GetColor(theme.ThemeText)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeText)).
-				Background(theme.BackgroundColor(theme.ThemeText)),
-			),
+		profileMenu.SetCell(
+			i, 0, tview.NewTableCell(activeIndicator).
+				SetSelectable(false).
+				SetTextColor(theme.GetColor(theme.ThemeText)).
+				SetSelectedStyle(
+					tcell.Style{}.
+						Foreground(theme.GetColor(theme.ThemeText)).
+						Background(theme.BackgroundColor(theme.ThemeText)),
+				),
 		)
 	}
 }

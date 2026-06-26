@@ -1,18 +1,17 @@
 package views
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 
 	"go.uber.org/atomic"
-
-	"slices"
 
 	"github.com/darkhz/bluetuith/ui/keybindings"
 	"github.com/darkhz/bluetuith/ui/theme"
@@ -265,12 +264,18 @@ func (f *filePickerView) changeDir(cdFwd bool, cdBack bool) {
 		return
 	}
 
-	sort.Slice(dlist, func(i, j int) bool {
-		if dlist[i].IsDir() != dlist[j].IsDir() {
-			return dlist[i].IsDir()
+	slices.SortFunc(dlist, func(i, j fs.DirEntry) int {
+		if i.IsDir() != j.IsDir() {
+			if i.IsDir() && !j.IsDir() {
+				return -1
+			}
+
+			if !i.IsDir() && j.IsDir() {
+				return 1
+			}
 		}
 
-		return dlist[i].Name() < dlist[j].Name()
+		return cmp.Compare(i.Name(), j.Name())
 	})
 
 	f.currentPath = testPath
@@ -337,22 +342,25 @@ func (f *filePickerView) createDirList(dlist []fs.DirEntry, cdBack bool) {
 				entryColor = theme.GetColor(theme.ThemeText)
 			}
 
-			f.table.SetCell(row+rowpadding, 0, tview.NewTableCell(" ").
-				SetSelectable(false),
+			f.table.SetCell(
+				row+rowpadding, 0, tview.NewTableCell(" ").
+					SetSelectable(false),
 			)
 
-			f.table.SetCell(row+rowpadding, 1, tview.NewTableCell(tview.Escape(name)).
-				SetExpansion(1).
-				SetReference(entry).
-				SetAttributes(attr).
-				SetTextColor(entryColor).
-				SetAlign(tview.AlignLeft).
-				SetOnClickedFunc(f.cellHandler).
-				SetSelectedStyle(tcell.Style{}.
-					Bold(true).
-					Foreground(entryColor).
-					Background(theme.BackgroundColor(theme.ThemeText)),
-				),
+			f.table.SetCell(
+				row+rowpadding, 1, tview.NewTableCell(tview.Escape(name)).
+					SetExpansion(1).
+					SetReference(entry).
+					SetAttributes(attr).
+					SetTextColor(entryColor).
+					SetAlign(tview.AlignLeft).
+					SetOnClickedFunc(f.cellHandler).
+					SetSelectedStyle(
+						tcell.Style{}.
+							Bold(true).
+							Foreground(entryColor).
+							Background(theme.BackgroundColor(theme.ThemeText)),
+					),
 			)
 
 			for col, text := range []string{
@@ -360,12 +368,14 @@ func (f *filePickerView) createDirList(dlist []fs.DirEntry, cdBack bool) {
 				fileTotalSize,
 				fileModifiedTime,
 			} {
-				f.table.SetCell(row+rowpadding, col+2, tview.NewTableCell(text).
-					SetAlign(tview.AlignRight).
-					SetTextColor(tcell.ColorGrey).
-					SetSelectedStyle(tcell.Style{}.
-						Bold(true),
-					),
+				f.table.SetCell(
+					row+rowpadding, col+2, tview.NewTableCell(text).
+						SetAlign(tview.AlignRight).
+						SetTextColor(tcell.ColorGrey).
+						SetSelectedStyle(
+							tcell.Style{}.
+								Bold(true),
+						),
 				)
 			}
 

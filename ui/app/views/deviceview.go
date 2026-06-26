@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
+	"github.com/bluetuith-org/bluetooth-classic/api/optional"
 	"github.com/darkhz/bluetuith/ui/keybindings"
 	"github.com/darkhz/bluetuith/ui/theme"
 	"github.com/darkhz/tview"
@@ -47,7 +48,7 @@ func (d *deviceView) Initialize() error {
 	d.table.SetMouseCapture(func(action tview.MouseAction, event *tcell.EventMouse) (tview.MouseAction, *tcell.EventMouse) {
 		if action == tview.MouseRightClick && d.table.HasFocus() {
 			device := d.getSelection(false)
-			if device.Address.IsNil() {
+			if device.IsNil() {
 				return action, event
 			}
 
@@ -98,41 +99,33 @@ func (d *deviceView) connectByAddress() {
 // showDetailedInfo shows detailed information about a device.
 func (d *deviceView) showDetailedInfo() {
 	device := d.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return
 	}
 
-	yesno := func(val bool) string {
-		if !val {
-			return "no"
-		}
-
-		return "yes"
-	}
-
-	assocAdapter, err := d.app.Session().Adapter(device.AssociatedAdapter).Properties()
+	assocAdapter, err := d.app.Session().Adapter(device.DeviceAddress.AdapterAddress()).Properties()
 	if err != nil {
 		d.status.ErrorMessage(err)
 		return
 	}
 
-	device, err = d.app.Session().Device(device.Address).Properties()
+	device, err = d.app.Session().Device(device.DeviceAddress).Properties()
 	if err != nil {
 		d.status.ErrorMessage(err)
 		return
 	}
 
 	props := [][]string{
-		{"Name", device.Name},
-		{"Alias", device.Alias},
+		{"Name", optGetValueString(device.Name)},
+		{"Alias", optGetValueString(device.Alias)},
 		{"Address", device.Address.String()},
 		{"Class", strconv.FormatUint(uint64(device.Class), 10)},
 		{"Adapter", assocAdapter.UniqueName},
-		{"Connected", yesno(device.Connected)},
-		{"Paired", yesno(device.Paired)},
-		{"Bonded", yesno(device.Bonded)},
-		{"Trusted", yesno(device.Trusted)},
-		{"Blocked", yesno(device.Blocked)},
+		{"Connected", optYesNo(device.Connected)},
+		{"Paired", optYesNo(device.Paired)},
+		{"Bonded", optYesNo(device.Bonded)},
+		{"Trusted", optYesNo(device.Trusted)},
+		{"Blocked", optYesNo(device.Blocked)},
 		{"LegacyPairing", yesno(device.LegacyPairing)},
 	}
 	props = append(props, []string{"UUIDs", ""})
@@ -151,37 +144,42 @@ func (d *deviceView) showDetailedInfo() {
 			propValue += " (" + device.Type + ")"
 		}
 
-		infoModal.table.SetCell(i, 0, tview.NewTableCell("[::b]"+propName+":").
-			SetExpansion(1).
-			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeText)).
-			SetSelectedStyle(tcell.Style{}.
-				Bold(true).
-				Underline(true),
-			),
+		infoModal.table.SetCell(
+			i, 0, tview.NewTableCell("[::b]"+propName+":").
+				SetExpansion(1).
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor(theme.ThemeText)).
+				SetSelectedStyle(
+					tcell.Style{}.
+						Bold(true).
+						Underline(true),
+				),
 		)
 
-		infoModal.table.SetCell(i, 1, tview.NewTableCell(propValue).
-			SetExpansion(1).
-			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeText)),
+		infoModal.table.SetCell(
+			i, 1, tview.NewTableCell(propValue).
+				SetExpansion(1).
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 	}
 
 	rows := infoModal.table.GetRowCount() - 1
 	for i, serviceUUID := range device.UUIDs {
 		serviceType := bluetooth.ServiceType(serviceUUID)
-		serviceUUID = "(" + serviceUUID + ")"
+		serviceString := "(" + serviceUUID.String() + ")"
 
-		infoModal.table.SetCell(rows+i, 1, tview.NewTableCell(serviceType).
-			SetExpansion(1).
-			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeText)),
+		infoModal.table.SetCell(
+			rows+i, 1, tview.NewTableCell(serviceType).
+				SetExpansion(1).
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 
-		infoModal.table.SetCell(rows+i, 2, tview.NewTableCell(serviceUUID).
-			SetExpansion(0).
-			SetTextColor(theme.GetColor(theme.ThemeText)),
+		infoModal.table.SetCell(
+			rows+i, 2, tview.NewTableCell(serviceString).
+				SetExpansion(0).
+				SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 	}
 
@@ -225,7 +223,7 @@ func (d *deviceView) getSelection(lock bool) bluetooth.DeviceData {
 
 // getRowByAddress iterates through the devices view and checks
 // if a device whose path matches the path parameter exists.
-func (d *deviceView) getRowByAddress(address bluetooth.MacAddress) (int, bool) {
+func (d *deviceView) getRowByAddress(address bluetooth.DeviceAddress) (int, bool) {
 	for row := range d.table.GetRowCount() {
 		cell := d.table.GetCell(row, 0)
 		if cell == nil {
@@ -237,7 +235,7 @@ func (d *deviceView) getRowByAddress(address bluetooth.MacAddress) (int, bool) {
 			continue
 		}
 
-		if ref.Address == address {
+		if ref.DeviceAddress == address {
 			return row, true
 		}
 	}
@@ -249,14 +247,12 @@ func (d *deviceView) getRowByAddress(address bluetooth.MacAddress) (int, bool) {
 func (d *deviceView) setInfo(row int, device bluetooth.DeviceData) {
 	var sb strings.Builder
 
-	name := device.Name
-	if name == "" {
-		name = device.Address.String()
-	}
+	name := getDeviceDisplayName(device.DeviceEventData)
+
 	sb.WriteString(name)
 	sb.WriteString(" (")
-	if device.Alias != "" && device.Alias != device.Name {
-		sb.WriteString(theme.ColorWrap(theme.ThemeDeviceAlias, device.Alias))
+	if !device.Alias.IsZero() && device.Alias.Value() != name {
+		sb.WriteString(theme.ColorWrap(theme.ThemeDeviceAlias, device.Alias.Value()))
 		sb.WriteString(", ")
 	}
 	sb.WriteString(theme.ColorWrap(theme.ThemeDeviceType, device.Type))
@@ -272,9 +268,10 @@ func (d *deviceView) setInfo(row int, device bluetooth.DeviceData) {
 			SetAlign(tview.AlignLeft).
 			SetAttributes(tcell.AttrBold).
 			SetTextColor(theme.GetColor(nameColor)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(nameColor)).
-				Background(theme.BackgroundColor(nameColor)),
+			SetSelectedStyle(
+				tcell.Style{}.
+					Foreground(theme.GetColor(nameColor)).
+					Background(theme.BackgroundColor(nameColor)),
 			),
 	)
 
@@ -300,35 +297,35 @@ func (d *deviceView) setPropertyInfo(row int, deviceEvent bluetooth.DeviceEventD
 		sb.WriteString(prop)
 	}
 
-	if deviceEvent.Connected {
+	if connected, ok := deviceEvent.Connected.Get(); ok && connected {
 		appendProperty("Connected")
 
 		nameColor = theme.ThemeDeviceConnected
 		propColor = theme.ThemeDevicePropertyConnected
 
-		if deviceEvent.RSSI < 0 {
-			rssi := strconv.FormatInt(int64(deviceEvent.RSSI), 10)
+		if rssi, ok := deviceEvent.RSSI.Get(); ok && rssi < 0 {
+			rssi := strconv.FormatInt(int64(rssi), 10)
 			sb.WriteString(" [")
 			sb.WriteString(rssi)
 			sb.WriteString("[]")
 		}
 
-		if deviceEvent.Percentage > 0 {
+		if percentage, ok := deviceEvent.Percentage.Get(); ok && percentage > 0 {
 			appendProperty("Battery ")
-			sb.WriteString(strconv.Itoa(deviceEvent.Percentage))
+			sb.WriteString(strconv.FormatUint(uint64(percentage), 10))
 			sb.WriteString("%")
 		}
 	}
-	if deviceEvent.Trusted {
+	if trusted, ok := deviceEvent.Trusted.Get(); ok && trusted {
 		appendProperty("Trusted")
 	}
-	if deviceEvent.Blocked {
+	if blocked, ok := deviceEvent.Blocked.Get(); ok && blocked {
 		appendProperty("Blocked")
 	}
 
-	if deviceEvent.Bonded && deviceEvent.Paired {
+	if bonded, ok := deviceEvent.Bonded.Get(); ok && bonded {
 		appendProperty("Bonded")
-	} else if !deviceEvent.Bonded && deviceEvent.Paired {
+	} else if paired, ok := deviceEvent.Paired.Get(); ok && paired {
 		appendProperty("Paired")
 	}
 
@@ -367,8 +364,9 @@ func (d *deviceView) setPropertyInfo(row int, deviceEvent bluetooth.DeviceEventD
 			SetExpansion(1).
 			SetAlign(tview.AlignRight).
 			SetTextColor(theme.GetColor(propColor)).
-			SetSelectedStyle(tcell.Style{}.
-				Bold(true),
+			SetSelectedStyle(
+				tcell.Style{}.
+					Bold(true),
 			),
 	)
 }
@@ -390,7 +388,7 @@ func (d *deviceView) event() {
 			go d.app.QueueDraw(func() {
 				deviceRow := d.table.GetRowCount()
 
-				row, ok := d.getRowByAddress(ev.Address)
+				row, ok := d.getRowByAddress(ev.DeviceAddress)
 				if ok {
 					deviceRow = row
 				}
@@ -399,21 +397,57 @@ func (d *deviceView) event() {
 
 		case ev := <-deviceSub.UpdatedEvents:
 			go d.app.QueueDraw(func() {
-				row, ok := d.getRowByAddress(ev.Address)
+				row, ok := d.getRowByAddress(ev.DeviceAddress)
 				if ok {
 					d.setPropertyInfo(row, ev, true)
-
 				}
 			})
 
 		case ev := <-deviceSub.RemovedEvents:
 			go d.app.QueueDraw(func() {
-				row, ok := d.getRowByAddress(ev.Address)
+				row, ok := d.getRowByAddress(ev.DeviceAddress)
 				if ok {
 					d.table.RemoveRow(row)
-					d.player.closeForDevice(ev.Address)
+					d.player.closeForDevice(ev.DeviceAddress)
 				}
 			})
 		}
 	}
+}
+
+func yesno(val bool) string {
+	if !val {
+		return "no"
+	}
+
+	return "yes"
+}
+
+func optGetValueString(val optional.Optional[string]) string {
+	if val.IsZero() {
+		return "Not specified"
+	}
+
+	return val.Value()
+}
+
+func optYesNo(val optional.Optional[bool]) string {
+	if val.IsZero() {
+		return "Not specified"
+	}
+
+	return yesno(val.Value())
+}
+
+// getDeviceDisplayName returns the display name for the device.
+func getDeviceDisplayName(deviceData bluetooth.DeviceEventData) string {
+	if name, ok := deviceData.Name.Get(); ok {
+		return name
+	}
+
+	if alias, ok := deviceData.Alias.Get(); ok {
+		return alias
+	}
+
+	return deviceData.Address.String()
 }

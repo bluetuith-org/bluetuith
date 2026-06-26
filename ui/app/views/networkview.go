@@ -47,7 +47,7 @@ func (n *networkView) networkSelect() {
 	var connTypes []nwTypeDesc
 
 	device := n.device.getSelection(false)
-	if device.Address.IsNil() {
+	if device.IsNil() {
 		return
 	}
 
@@ -64,8 +64,10 @@ func (n *networkView) networkSelect() {
 		})
 	}
 
+	deviceName := getDeviceDisplayName(device.DeviceEventData)
+
 	if connTypes == nil {
-		n.status.InfoMessage("No network options exist for "+device.Name, false)
+		n.status.InfoMessage("No network options exist for "+deviceName, false)
 		return
 	}
 
@@ -85,7 +87,6 @@ func (n *networkView) networkSelect() {
 			}
 
 			go n.networkConnect(device, connType)
-
 		}, nil,
 		func(networkMenu *tview.Table) (int, int) {
 			var width int
@@ -98,23 +99,27 @@ func (n *networkView) networkSelect() {
 					width = len(description)
 				}
 
-				networkMenu.SetCell(row, 0, tview.NewTableCell(description).
-					SetExpansion(1).
-					SetReference(ctype).
-					SetAlign(tview.AlignLeft).
-					SetTextColor(theme.GetColor(theme.ThemeText)).
-					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeText)).
-						Background(theme.BackgroundColor(theme.ThemeText)),
-					),
+				networkMenu.SetCell(
+					row, 0, tview.NewTableCell(description).
+						SetExpansion(1).
+						SetReference(ctype).
+						SetAlign(tview.AlignLeft).
+						SetTextColor(theme.GetColor(theme.ThemeText)).
+						SetSelectedStyle(
+							tcell.Style{}.
+								Foreground(theme.GetColor(theme.ThemeText)).
+								Background(theme.BackgroundColor(theme.ThemeText)),
+						),
 				)
-				networkMenu.SetCell(row, 1, tview.NewTableCell("("+strings.ToUpper(ctype.String())+")").
-					SetAlign(tview.AlignRight).
-					SetTextColor(theme.GetColor(theme.ThemeText)).
-					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeText)).
-						Background(theme.BackgroundColor(theme.ThemeText)),
-					),
+				networkMenu.SetCell(
+					row, 1, tview.NewTableCell("("+strings.ToUpper(ctype.String())+")").
+						SetAlign(tview.AlignRight).
+						SetTextColor(theme.GetColor(theme.ThemeText)).
+						SetSelectedStyle(
+							tcell.Style{}.
+								Foreground(theme.GetColor(theme.ThemeText)).
+								Background(theme.BackgroundColor(theme.ThemeText)),
+						),
 				)
 			}
 
@@ -125,14 +130,17 @@ func (n *networkView) networkSelect() {
 
 // networkConnect connects to the network with the selected network type.
 func (n *networkView) networkConnect(device bluetooth.DeviceData, connType bluetooth.NetworkType) {
-	info := fmt.Sprintf("%s (%s)",
-		device.Name, strings.ToUpper(connType.String()),
+	info := fmt.Sprintf(
+		"%s (%s)",
+		getDeviceDisplayName(device.DeviceEventData), strings.ToUpper(connType.String()),
 	)
+
+	deviceName := getDeviceDisplayName(device.DeviceEventData)
 
 	n.op.startOperation(
 		func() {
 			n.status.InfoMessage("Connecting to "+info, true)
-			err := n.app.Session().Network(device.Address).Connect(device.Name, connType)
+			err := n.app.Session().Network(device.DeviceAddress).Connect(deviceName, connType)
 			if err != nil {
 				n.status.ErrorMessage(err)
 				return
@@ -140,7 +148,7 @@ func (n *networkView) networkConnect(device bluetooth.DeviceData, connType bluet
 			n.status.InfoMessage("Connected to "+info, false)
 		},
 		func() {
-			err := n.app.Session().Network(device.Address).Disconnect()
+			err := n.app.Session().Network(device.DeviceAddress).Disconnect()
 			if err != nil {
 				n.status.ErrorMessage(err)
 				return

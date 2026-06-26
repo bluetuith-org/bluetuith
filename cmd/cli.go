@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/appfeatures"
+	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
 	scfg "github.com/bluetuith-org/bluetooth-classic/api/config"
 	"github.com/bluetuith-org/bluetooth-classic/session"
 	"github.com/darkhz/bluetuith/ui/app"
@@ -43,7 +44,7 @@ func newApp() *cli.App {
 		EnableBashCompletion:   true,
 		UseShortOptionHandling: true,
 		Suggest:                true,
-		Flags: []cli.Flag{
+		Flags: append([]cli.Flag{
 			&cli.BoolFlag{
 				Name:    "list-adapters",
 				Aliases: []string{"l"},
@@ -67,7 +68,7 @@ func newApp() *cli.App {
 					for _, adapter := range adapters {
 						sb.WriteString("\n")
 						sb.WriteString("- ")
-						sb.WriteString(adapter.UniqueName)
+						sb.WriteString(getAdapterDisplayName(adapter))
 					}
 
 					fmt.Println(sb.String())
@@ -130,6 +131,12 @@ func newApp() *cli.App {
 				Usage:   "Ask for confirmation before quitting the application.",
 			},
 			&cli.BoolFlag{
+				Name:    "disable-obex-services",
+				Aliases: []string{"o"},
+				EnvVars: []string{"BLUETUTITH_ENABLE_OBEX_SERVICES"},
+				Usage:   "Specify whether to disable OBEX services (like Object Push Transfers)",
+			},
+			&cli.BoolFlag{
 				Name:    "generate",
 				Aliases: []string{"g"},
 				Usage:   "Generate configuration.",
@@ -151,7 +158,7 @@ func newApp() *cli.App {
 					return err
 				},
 			},
-		},
+		}, getPlatformSpecificFlags()...),
 		Action: func(cliCtx *cli.Context) error {
 			if cliCtx.Bool("list-adapters") || cliCtx.Bool("generate") {
 				return nil
@@ -168,8 +175,11 @@ func newApp() *cli.App {
 				return err
 			}
 
+			sessionCfg := scfg.New()
+			populateSessionConfig(cliCtx, &sessionCfg)
+
 			app, s := app.NewApplication(), session.NewSession()
-			featureSet, _, err := s.Start(app.Authorizer(), scfg.New())
+			featureSet, _, err := s.Start(app.Authorizer(), sessionCfg)
 			if err != nil {
 				return err
 			}
@@ -215,4 +225,27 @@ func printUnsupportedFeatures(cfg *config.Config, featureSet *appfeatures.Featur
 
 	printWarn(warn.String())
 	time.Sleep(1 * time.Second)
+}
+
+func populateSessionConfig(cliCtx *cli.Context, sessionCfg *scfg.Configuration) {
+	sessionCfg.EnableObexServices = true
+	if cliCtx.Bool("disable-obex-services") {
+		sessionCfg.EnableObexServices = false
+	}
+
+	sessionCfg.LibraryPath = cliCtx.String("alt-library-path")
+	sessionCfg.SocketPath = cliCtx.String("alt-daemon-socket-path")
+}
+
+// getAdapterDisplayName returns the display name of the adapter.
+func getAdapterDisplayName(adapterData bluetooth.AdapterData) string {
+	if name, ok := adapterData.Name.Get(); ok {
+		return name
+	}
+
+	if adapterData.UniqueName != "" {
+		return adapterData.UniqueName
+	}
+
+	return adapterData.Address.String()
 }

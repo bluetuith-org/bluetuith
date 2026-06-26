@@ -1,13 +1,15 @@
 package views
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
-	"sort"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/bluetuith-org/bluetooth-classic/api/bluetooth"
+	"github.com/bluetuith-org/bluetooth-classic/api/optional"
 	"github.com/darkhz/tview"
 	"github.com/gdamore/tcell/v2"
 	"go.uber.org/atomic"
@@ -73,12 +75,20 @@ func (a *adapterView) refreshHeader() {
 		return
 	}
 
-	headerText := fmt.Sprintf("[\"%s\"]%s (%s)[\"\"]",
-		menuAdapterChangeName.String(),
-		props.Name,
-		props.UniqueName,
-	)
-	a.topAdapterName.SetText(theme.ColorWrap(theme.ThemeAdapter, headerText, "::bu"))
+	var sb strings.Builder
+
+	name := getAdapterDisplayName(props)
+	uniqueName := props.UniqueName
+
+	fmt.Fprintf(&sb, "[\"%s\"]", menuAdapterChangeName.String())
+	sb.WriteString(name)
+	if uniqueName != "" && uniqueName != name {
+		fmt.Fprintf(&sb, " (%s)", uniqueName)
+	}
+
+	fmt.Fprintf(&sb, "[\"\"]")
+
+	a.topAdapterName.SetText(theme.ColorWrap(theme.ThemeAdapter, sb.String(), "::bu"))
 }
 
 // getAdapter returns the currently selected adapter.
@@ -90,7 +100,7 @@ func (a *adapterView) getAdapter() *bluetooth.AdapterData {
 
 // currentSession wraps a bluetooth session with the current adapter.
 func (a *adapterView) currentSession() bluetooth.Adapter {
-	return a.app.Session().Adapter(a.currentAdapter.Load().Address)
+	return a.app.Session().Adapter(a.currentAdapter.Load().AdapterAddress)
 }
 
 // setAdapter sets the current adapter.
@@ -150,43 +160,60 @@ func (a *adapterView) change() {
 				return -1, -1
 			}
 
-			sort.Slice(adapters, func(i, j int) bool {
-				return adapters[i].UniqueName < adapters[j].UniqueName
+			slices.SortFunc(adapters, func(i, j bluetooth.AdapterData) int {
+				if ivar, jvar := i.UniqueName, j.UniqueName; ivar != "" && jvar != "" {
+					return cmp.Compare(ivar, jvar)
+				}
+
+				if ivar, jvar := i.Name, j.Name; !ivar.IsZero() && !jvar.IsZero() {
+					return cmp.Compare(ivar.Value(), jvar.Value())
+				}
+
+				return slices.Compare(i.Address[:], j.Address[:])
 			})
 
 			for row, adapter := range adapters {
-				if len(adapter.Name) > width {
-					width = len(adapter.Name)
+				name := getAdapterDisplayName(adapter)
+				if len(name) > width {
+					width = len(name)
 				}
 
-				if adapter.UniqueName == a.getAdapter().UniqueName {
+				if adapter.Address == a.getAdapter().Address {
 					index = row
 				}
 
-				adapterMenu.SetCell(row, 0, tview.NewTableCell(adapter.Name).
-					SetExpansion(1).
-					SetReference(adapter).
-					SetAlign(tview.AlignLeft).
-					SetTextColor(theme.GetColor(theme.ThemeAdapter)).
-					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeAdapter)).
-						Background(theme.BackgroundColor(theme.ThemeAdapter)),
-					),
+				adapterMenu.SetCell(
+					row, 0, tview.NewTableCell(name).
+						SetExpansion(1).
+						SetReference(adapter).
+						SetAlign(tview.AlignLeft).
+						SetTextColor(theme.GetColor(theme.ThemeAdapter)).
+						SetSelectedStyle(
+							tcell.Style{}.
+								Foreground(theme.GetColor(theme.ThemeAdapter)).
+								Background(theme.BackgroundColor(theme.ThemeAdapter)),
+						),
 				)
-				adapterMenu.SetCell(row, 1, tview.NewTableCell("("+adapter.UniqueName+")").
-					SetAlign(tview.AlignRight).
-					SetTextColor(theme.GetColor(theme.ThemeAdapter)).
-					SetSelectedStyle(tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeAdapter)).
-						Background(theme.BackgroundColor(theme.ThemeAdapter)),
-					),
-				)
+
+				if adapter.UniqueName != "" && adapter.UniqueName != name {
+					adapterMenu.SetCell(
+						row, 1, tview.NewTableCell("("+adapter.UniqueName+")").
+							SetAlign(tview.AlignRight).
+							SetTextColor(theme.GetColor(theme.ThemeAdapter)).
+							SetSelectedStyle(
+								tcell.Style{}.
+									Foreground(theme.GetColor(theme.ThemeAdapter)).
+									Background(theme.BackgroundColor(theme.ThemeAdapter)),
+							),
+					)
+				}
 			}
 
 			a.topAdapterName.Highlight(menuAdapterChangeName.String())
 
 			return width, index
-		})
+		},
+	)
 }
 
 // updateTopStatus updates the adapter status display.
@@ -201,7 +228,7 @@ func (a *adapterView) updateTopStatus() {
 
 	for _, status := range []struct {
 		Title   string
-		Enabled bool
+		Enabled optional.Optional[bool]
 		Color   theme.Context
 	}{
 		{
@@ -225,7 +252,11 @@ func (a *adapterView) updateTopStatus() {
 			Color:   theme.ThemeAdapterPairable,
 		},
 	} {
-		if !status.Enabled {
+		if status.Enabled.IsZero() {
+			continue
+		}
+
+		if !status.Enabled.Value() {
 			if status.Title != "Powered" {
 				continue
 			}
@@ -338,4 +369,17 @@ func (a *adapterView) event() {
 			}
 		}
 	}
+}
+
+// getAdapterDisplayName returns the display name of the adapter.
+func getAdapterDisplayName(adapterData bluetooth.AdapterData) string {
+	if name, ok := adapterData.Name.Get(); ok {
+		return name
+	}
+
+	if adapterData.UniqueName != "" {
+		return adapterData.UniqueName
+	}
+
+	return adapterData.Address.String()
 }
