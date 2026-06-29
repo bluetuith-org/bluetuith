@@ -3,10 +3,10 @@ module github.com/darkhz/bluetuith
 go 1.25.0
 
 require (
-	github.com/bluetuith-org/bluetooth-classic v0.0.6
-	github.com/darkhz/tview v0.0.0-20240308094543-6078a888ff79
+	github.com/bluetuith-org/bluetooth-classic v0.0.7
+	github.com/darkhz/tview v0.0.0-20260629135517-39ffa4cdbc93
 	github.com/fatih/color v1.18.0
-	github.com/gdamore/tcell/v2 v2.13.1
+	github.com/gdamore/tcell/v2 v2.13.10
 	github.com/google/uuid v1.6.0
 	github.com/knadh/koanf/parsers/hjson v1.0.0
 	github.com/knadh/koanf/providers/cliflagv2 v1.0.1
@@ -17,7 +17,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.18.0
 	github.com/urfave/cli/v2 v2.27.7
 	go.uber.org/atomic v1.11.0
-	golang.org/x/text v0.31.0
+	golang.org/x/text v0.38.0
 )
 
 require (
@@ -34,7 +34,7 @@ require (
 	github.com/godbus/dbus/v5 v5.2.2 // indirect
 	github.com/hjson/hjson-go/v4 v4.5.0 // indirect
 	github.com/knadh/koanf/maps v0.1.2 // indirect
-	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
+	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
 	github.com/mafik/pulseaudio v0.0.0-20240327130323-384e01075e6e // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -47,7 +47,5 @@ require (
 	github.com/ugorji/go/codec v1.3.1 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
 	golang.org/x/sys v0.46.0 // indirect
-	golang.org/x/term v0.37.0 // indirect
+	golang.org/x/term v0.44.0 // indirect
 )
-
-replace github.com/bluetuith-org/bluetooth-classic => ../bluetooth-classic/
