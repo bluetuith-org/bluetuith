@@ -3,8 +3,8 @@ module github.com/darkhz/bluetuith
 go 1.25.0
 
 require (
-	github.com/bluetuith-org/bluetooth-classic v0.0.7
-	github.com/darkhz/tview v0.0.0-20260629135517-39ffa4cdbc93
+	github.com/bluetuith-org/bluetooth-classic v0.0.8
+	github.com/darkhz/tview v0.0.0-20260701030911-bce6224ff25f
 	github.com/fatih/color v1.18.0
 	github.com/gdamore/tcell/v2 v2.13.10
 	github.com/google/uuid v1.6.0
