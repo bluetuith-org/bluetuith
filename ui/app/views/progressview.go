@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"sync"
 	"time"
@@ -110,7 +109,7 @@ func (p *progressView) Initialize() error {
 			return
 		}
 
-		if slices.Contains(progressViewButtons.GetRegionIDs(), added[0]) {
+		if containsRegionID(progressViewButtons, added[0]) {
 			switch added[0] {
 			case "resume":
 				p.resumeTransfer()
@@ -242,8 +241,6 @@ func (p *progressView) drawIndicator(progress *progressIndicator, props bluetoot
 
 	count := p.total.Load()
 	p.app.QueueDraw(func() {
-		p.showStatus()
-
 		rows := p.view.GetRowCount()
 
 		p.statusProgress.SetCell(0, 0, progress.desc)
@@ -324,6 +321,21 @@ func (p *progressView) monitorTransfers() {
 		return property, true
 	}
 
+	updateIndicator := func(property *transferProperty, ev bluetooth.ObjectPushEventData) {
+		p.drawIndicator(property.indicator, property.ObjectPushEventData)
+		property.indicator.progressBar.Set64(int64(ev.Transferred))
+
+		switch property.Status {
+		case bluetooth.TransferError:
+			p.status.ErrorMessage(fmt.Errorf("transfer could not be completed for %s", ev.Address.String()))
+			fallthrough
+
+		case bluetooth.TransferComplete:
+			p.removeProgress(property.ObjectPushData)
+			_, _ = getIndicator(ev, true)
+		}
+	}
+
 Transfer:
 	for {
 		select {
@@ -331,26 +343,20 @@ Transfer:
 			break Transfer
 
 		case ev := <-oppSub.AddedEvents:
-			_, _ = addIndicator(ev)
+			property, ok := getIndicator(ev.ObjectPushEventData, false)
+			if !ok {
+				property, _ = addIndicator(ev)
+			}
+
+			updateIndicator(property, ev.ObjectPushEventData)
 
 		case ev := <-oppSub.UpdatedEvents:
 			property, ok := getIndicator(ev, false)
 			if !ok {
-				property, _ = addIndicator(bluetooth.ObjectPushData{ObjectPushEventData: ev})
+				continue
 			}
 
-			p.drawIndicator(property.indicator, property.ObjectPushEventData)
-			property.indicator.progressBar.Set64(int64(ev.Transferred))
-
-			switch property.Status {
-			case bluetooth.TransferError:
-				p.status.ErrorMessage(fmt.Errorf("transfer could not be completed for %s", ev.Address.String()))
-				fallthrough
-
-			case bluetooth.TransferComplete:
-				p.removeProgress(property.ObjectPushData)
-				_, _ = getIndicator(ev, true)
-			}
+			updateIndicator(property, ev)
 
 		case ev := <-oppSub.RemovedEvents:
 			property, ok := getIndicator(ev, true)
@@ -373,6 +379,7 @@ func (p *progressView) startTransfer(address bluetooth.DeviceAddress, session bl
 	}
 
 	p.sessions.Store(address, psession)
+	p.showStatus()
 }
 
 // suspendTransfer suspends the transfer.

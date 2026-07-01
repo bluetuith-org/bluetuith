@@ -136,7 +136,6 @@ func (m *modalViews) newMenuModal(name string, regionX, regionY int) *tableModal
 			mgr:     m,
 		},
 	}
-
 }
 
 // newDisplayModal returns a display modal.

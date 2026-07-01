@@ -93,9 +93,7 @@ func (a *audioProfilesView) audioProfiles() {
 						SetOnClickedFunc(a.setProfile).
 						SetTextColor(theme.GetColor(theme.ThemeText)).
 						SetSelectedStyle(
-							tcell.Style{}.
-								Foreground(theme.GetColor(theme.ThemeText)).
-								Background(theme.BackgroundColor(theme.ThemeText)),
+							tcell.Style{}.Reverse(true),
 						),
 				)
 
@@ -144,9 +142,7 @@ func (a *audioProfilesView) markActiveProfile(profileMenu *tview.Table, index ..
 				SetSelectable(false).
 				SetTextColor(theme.GetColor(theme.ThemeText)).
 				SetSelectedStyle(
-					tcell.Style{}.
-						Foreground(theme.GetColor(theme.ThemeText)).
-						Background(theme.BackgroundColor(theme.ThemeText)),
+					tcell.Style{}.Reverse(true),
 				),
 		)
 	}

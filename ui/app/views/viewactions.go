@@ -578,14 +578,8 @@ func (v *viewActions) send(_ ...string) bool {
 		return false
 	}
 
-	connected, ok := device.Connected.Get()
-	if !ok {
-		displayErr = errors.New("cannot determine if the device is connected")
-		return false
-	}
-
-	if !paired || !connected {
-		displayErr = errors.New(getDeviceDisplayName(device.DeviceEventData) + " is not paired and/or connected")
+	if !paired {
+		displayErr = errors.New(getDeviceDisplayName(device.DeviceEventData) + " is not paired")
 		return false
 	}
 
@@ -593,7 +587,7 @@ func (v *viewActions) send(_ ...string) bool {
 
 	v.rv.op.startOperation(
 		func() {
-			v.rv.status.InfoMessage("Initializing OBEX Session()..", true)
+			v.rv.status.InfoMessage("Initializing Object Push session..", true)
 			oppSession := v.rv.app.Session().Obex(device.DeviceAddress).ObjectPush()
 
 			err := oppSession.CreateSession(ctx)
@@ -604,7 +598,7 @@ func (v *viewActions) send(_ ...string) bool {
 
 			v.rv.op.cancelOperation(false)
 
-			v.rv.status.InfoMessage("Created OBEX session", false)
+			v.rv.status.InfoMessage("Created Object Push session", false)
 
 			fileList, err := v.rv.filepicker.Show()
 			if err != nil {
@@ -633,7 +627,7 @@ func (v *viewActions) send(_ ...string) bool {
 		},
 		func() {
 			cancel()
-			v.rv.status.InfoMessage("Cancelled OBEX session creation", false)
+			v.rv.status.InfoMessage("Cancelled Object Push session creation", false)
 		},
 	)
 

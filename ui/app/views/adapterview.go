@@ -71,7 +71,8 @@ func (a *adapterView) SetRootView(v *Views) {
 func (a *adapterView) refreshHeader() {
 	props, err := a.currentSession().Properties()
 	if err != nil {
-		a.menu.setHeader(theme.ColorWrap(theme.ThemeAdapter, "(Connect adapter)", "::bu"))
+		a.menu.setHeader(theme.ColorWrap(theme.ThemeAdapter, "(Connect adapter)", "::bu"), true)
+		a.topAdapterName.SetText(theme.ColorWrap(theme.ThemeAdapter, "<None>", "::bu"))
 		return
 	}
 
@@ -88,6 +89,7 @@ func (a *adapterView) refreshHeader() {
 
 	fmt.Fprintf(&sb, "[\"\"]")
 
+	a.menu.setHeader("", false)
 	a.topAdapterName.SetText(theme.ColorWrap(theme.ThemeAdapter, sb.String(), "::bu"))
 }
 
@@ -154,6 +156,7 @@ func (a *adapterView) change() {
 		func(adapterMenu *tview.Table) (int, int) {
 			var width, index int
 
+			adapterMenu.Clear()
 			adapters, err := a.app.Session().Adapters()
 			if err != nil {
 				a.status.ErrorMessage(err)
@@ -189,9 +192,7 @@ func (a *adapterView) change() {
 						SetAlign(tview.AlignLeft).
 						SetTextColor(theme.GetColor(theme.ThemeAdapter)).
 						SetSelectedStyle(
-							tcell.Style{}.
-								Foreground(theme.GetColor(theme.ThemeAdapter)).
-								Background(theme.BackgroundColor(theme.ThemeAdapter)),
+							tcell.Style{}.Reverse(true),
 						),
 				)
 
@@ -201,9 +202,7 @@ func (a *adapterView) change() {
 							SetAlign(tview.AlignRight).
 							SetTextColor(theme.GetColor(theme.ThemeAdapter)).
 							SetSelectedStyle(
-								tcell.Style{}.
-									Foreground(theme.GetColor(theme.ThemeAdapter)).
-									Background(theme.BackgroundColor(theme.ThemeAdapter)),
+								tcell.Style{}.Reverse(true),
 							),
 					)
 				}
@@ -212,7 +211,7 @@ func (a *adapterView) change() {
 			a.topAdapterName.Highlight(menuAdapterChangeName.String())
 
 			return width, index
-		},
+		}, struct{}{},
 	)
 }
 
@@ -222,7 +221,6 @@ func (a *adapterView) updateTopStatus() {
 
 	props, err := a.currentSession().Properties()
 	if err != nil {
-		a.status.ErrorMessage(err)
 		return
 	}
 
@@ -338,7 +336,7 @@ func (a *adapterView) event() {
 		case <-adapterSub.Done:
 			return
 
-		case ev := <-adapterSub.AddedEvents:
+		case <-adapterSub.AddedEvents:
 			address := a.currentAdapter.Load().Address
 			if address.IsNil() && !a.selectAdapter() {
 				continue
@@ -346,11 +344,6 @@ func (a *adapterView) event() {
 
 			go a.app.QueueDraw(func() {
 				a.change()
-
-				if ev.Address == address {
-					a.updateTopStatus()
-					a.device.list()
-				}
 			})
 
 		case ev := <-adapterSub.UpdatedEvents:
@@ -365,6 +358,10 @@ func (a *adapterView) event() {
 				go a.app.QueueDraw(func() {
 					a.updateTopStatus()
 					a.change()
+				})
+			} else {
+				go a.app.QueueDraw(func() {
+					a.device.clear()
 				})
 			}
 		}

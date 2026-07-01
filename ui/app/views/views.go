@@ -149,7 +149,7 @@ func (v *Views) Initialize(binder AppBinder, cfg *config.Config) (*AppData, erro
 		}
 	}
 
-	v.menu.setHeader("")
+	v.menu.setHeader("", false)
 
 	v.kb.Initialize()
 	v.auth.setInitialized()
@@ -208,7 +208,7 @@ func (v *Views) arrangeViews() *tview.Flex {
 	menuArea.SetBackgroundColor(theme.GetColor(theme.ThemeBackground))
 	menuArea.SetDrawFunc(func(_ tcell.Screen, x, y, width, height int) (int, int, int, int) {
 		w := len(v.adapter.topAdapterName.GetText(true))
-		resize := min(w, width/8)
+		resize := min(w, width/3)
 
 		menuArea.ResizeItem(v.adapter.topAdapterName, resize, 0)
 
@@ -309,4 +309,36 @@ func horizontalLine() *tview.Box {
 				width - 2,
 				height - (centerY + 1 - y)
 		})
+}
+
+func containsRegionID(tv *tview.TextView, regionID string) bool {
+	if tv == nil {
+		return false
+	}
+
+	for _, region := range tv.GetRegions(0, false) {
+		if region.ID == regionID {
+			return true
+		}
+	}
+
+	return false
+}
+
+func getRegionStartPosition(tv *tview.TextView, regionID string, regions ...*tview.Region) int {
+	if regions == nil {
+		regions = tv.GetRegions(0, false)
+	}
+
+	if len(regions) == 0 {
+		return 0
+	}
+
+	for _, region := range regions {
+		if region.ID == regionID {
+			return region.StartColumn
+		}
+	}
+
+	return 0
 }

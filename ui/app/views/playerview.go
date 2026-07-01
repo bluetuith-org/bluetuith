@@ -2,7 +2,6 @@ package views
 
 import (
 	"errors"
-	"math/bits"
 	"strconv"
 	"strings"
 	"sync"
@@ -119,7 +118,7 @@ func (m *mediaPlayer) closeForDevice(deviceAddress bluetooth.DeviceAddress) {
 }
 
 // renderProgress renders the player progress bar.
-func (m *mediaPlayer) renderProgress(progressView *tview.TextView, media bluetooth.MediaData) {
+func (m *mediaPlayer) renderProgress(progressView *tview.TextView, media bluetooth.MediaEventData) {
 	var length int
 
 	_, _, width, _ := m.pages.GetRect()
@@ -199,7 +198,7 @@ func (m *mediaPlayer) renderTrackData(infoView, titleView, trackView *tview.Text
 }
 
 // renderPlayer renders the entire media player.
-func (m *mediaPlayer) renderPlayer(cached bluetooth.MediaData, elements playerElements, track, progress, buttons bool) bool {
+func (m *mediaPlayer) renderPlayer(cached bluetooth.MediaEventData, elements playerElements, track, progress, buttons bool) bool {
 	if track {
 		m.renderTrackData(elements.info, elements.title, elements.track, cached.TrackData)
 	}
@@ -221,7 +220,6 @@ func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.Me
 	if !ok {
 		return
 	}
-	defer mediaSub.Unsubscribe()
 
 	deviceName := getDeviceDisplayName(device.DeviceEventData)
 
@@ -236,19 +234,13 @@ func (m *mediaPlayer) updateLoop(device bluetooth.DeviceData, props bluetooth.Me
 	m.isOpen.Store(true)
 	defer m.isOpen.Store(false)
 
-	t := time.NewTicker(1 * time.Second)
-	defer t.Stop()
-
-	var cached bluetooth.MediaData
-	var delta uint32
-
-	cached = props
+	cached := bluetooth.MediaEventData(props)
 	if cached.Title == "" {
 		cached.Title = "<No media is playing>"
 	}
 
 	m.app.QueueDraw(func() {
-		m.renderPlayer(props, elements, true, true, true)
+		m.renderPlayer(bluetooth.MediaEventData(props), elements, true, true, true)
 	})
 
 PlayerLoop:
@@ -258,13 +250,6 @@ PlayerLoop:
 			break PlayerLoop
 
 		case h := <-m.keyEvent:
-			switch h {
-			case "fastforward", "rewind":
-				t.Reset(250 * time.Millisecond)
-			default:
-				t.Reset(1 * time.Second)
-			}
-
 			go m.app.QueueDraw(func() {
 				elements.buttons.Highlight(h)
 			})
@@ -281,26 +266,13 @@ PlayerLoop:
 				track = true
 			}
 
-			if ev != (bluetooth.MediaData{}) && ev != cached {
+			if ev != (bluetooth.MediaEventData{}) && ev != cached {
 				if ev.Status != "" && ev.Status != cached.Status {
 					cached.Status = ev.Status
 					buttons = true
 				}
 
 				if ev.Position > 0 {
-					switch cached.Status {
-					case bluetooth.MediaForwardSeek, bluetooth.MediaReverseSeek:
-						if ev.Position > cached.Position {
-							delta = ev.Position - cached.Position
-						} else {
-							delta = cached.Position - ev.Position
-						}
-
-					default:
-						t.Reset(1 * time.Second)
-						delta = 0
-					}
-
 					if ev.Position != cached.Position {
 						cached.Position = ev.Position
 						progress = true
@@ -310,46 +282,9 @@ PlayerLoop:
 
 			data := cached
 			m.app.QueueDraw(func() {
-				if m.renderPlayer(data, elements, track, progress, buttons) {
-					t.Reset(1 * time.Second)
-				}
+				m.renderPlayer(data, elements, track, progress, buttons)
 			})
 
-		case <-t.C:
-			if cached.Position >= cached.Duration {
-				continue
-			}
-
-			switch cached.Status {
-			case bluetooth.MediaForwardSeek:
-				t.Reset(250 * time.Millisecond)
-				pos, c := bits.Add32(cached.Position, delta, 0)
-				if c != 0 {
-					cached.Position = 0
-					break
-				}
-				cached.Position = pos
-
-			case bluetooth.MediaReverseSeek:
-				t.Reset(250 * time.Millisecond)
-				pos, b := bits.Sub32(cached.Position, delta, 0)
-				if b != 0 {
-					cached.Position = 0
-					break
-				}
-				cached.Position = pos
-
-			case bluetooth.MediaPlaying:
-				cached.Position += 1000
-
-			default:
-				continue
-			}
-
-			mediaData := cached
-			m.app.QueueDraw(func() {
-				m.renderProgress(elements.progress, mediaData)
-			})
 		}
 	}
 }
@@ -415,8 +350,10 @@ func (m *mediaPlayer) setup(deviceName string) playerElements {
 		x -= rectx
 		y -= recty
 
+		regions := buttons.GetRegions(0, false)
+
 		for _, r := range buttonNames {
-			start := buttons.GetRegionStart(r)
+			start := getRegionStartPosition(buttons, r, regions...)
 			if x == start || x == start+1 {
 				region = r
 				break

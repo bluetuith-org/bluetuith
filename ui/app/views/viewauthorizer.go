@@ -37,6 +37,11 @@ func (a *authorizer) AuthorizeTransfer(timeout bluetooth.AuthTimeout, props blue
 		return nil
 	}
 
+	if a.alwaysAuthorize {
+		a.v.progress.showStatus()
+		return nil
+	}
+
 	device, err := a.v.app.Session().Device(props.DeviceAddress).Properties()
 	if err != nil {
 		return err

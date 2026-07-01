@@ -168,7 +168,7 @@ func (f *filePickerView) filePickerButtons() *tview.TextView {
 			return
 		}
 
-		if slices.Contains(f.buttons.GetRegionIDs(), added[0]) {
+		if containsRegionID(f.buttons, added[0]) {
 			f.buttonHandler(added[0])
 		}
 	})
@@ -357,9 +357,7 @@ func (f *filePickerView) createDirList(dlist []fs.DirEntry, cdBack bool) {
 					SetOnClickedFunc(f.cellHandler).
 					SetSelectedStyle(
 						tcell.Style{}.
-							Bold(true).
-							Foreground(entryColor).
-							Background(theme.BackgroundColor(theme.ThemeText)),
+							Bold(true).Reverse(true),
 					),
 			)
 
@@ -374,7 +372,7 @@ func (f *filePickerView) createDirList(dlist []fs.DirEntry, cdBack bool) {
 						SetTextColor(tcell.ColorGrey).
 						SetSelectedStyle(
 							tcell.Style{}.
-								Bold(true),
+								Bold(true).Reverse(true),
 						),
 				)
 			}

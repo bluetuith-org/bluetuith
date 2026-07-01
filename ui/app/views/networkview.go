@@ -106,9 +106,7 @@ func (n *networkView) networkSelect() {
 						SetAlign(tview.AlignLeft).
 						SetTextColor(theme.GetColor(theme.ThemeText)).
 						SetSelectedStyle(
-							tcell.Style{}.
-								Foreground(theme.GetColor(theme.ThemeText)).
-								Background(theme.BackgroundColor(theme.ThemeText)),
+							tcell.Style{}.Reverse(true),
 						),
 				)
 				networkMenu.SetCell(
@@ -116,9 +114,7 @@ func (n *networkView) networkSelect() {
 						SetAlign(tview.AlignRight).
 						SetTextColor(theme.GetColor(theme.ThemeText)).
 						SetSelectedStyle(
-							tcell.Style{}.
-								Foreground(theme.GetColor(theme.ThemeText)).
-								Background(theme.BackgroundColor(theme.ThemeText)),
+							tcell.Style{}.Reverse(true),
 						),
 				)
 			}

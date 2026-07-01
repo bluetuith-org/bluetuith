@@ -1,6 +1,7 @@
 package views
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/darkhz/bluetuith/ui/keybindings"
@@ -66,7 +67,7 @@ func (m *menuBarView) Initialize() error {
 			return
 		}
 
-		pos := m.bar.GetRegionStart(added[0])
+		pos := getRegionStartPosition(m.bar, added[0])
 		_, _, w, _ := m.adapter.topAdapterName.GetInnerRect()
 
 		m.setupSubMenu(pos+w, 1, viewName(added[0]))
@@ -243,26 +244,26 @@ func (m *menuBarView) setupSubMenu(x, y int, menuID viewName, device ...struct{}
 			width = displayWidth
 		}
 
-		modal.table.SetCell(index-skipped, 0, tview.NewTableCell(display).
-			SetExpansion(1).
-			SetReference(&menuopt).
-			SetAlign(tview.AlignLeft).
-			SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
-			SetClickedFunc(clickedFunc).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeMenuItem)).
-				Background(theme.BackgroundColor(theme.ThemeMenuItem)),
-			),
+		modal.table.SetCell(
+			index-skipped, 0, tview.NewTableCell(display).
+				SetExpansion(1).
+				SetReference(&menuopt).
+				SetAlign(tview.AlignLeft).
+				SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
+				SetClickedFunc(clickedFunc).
+				SetSelectedStyle(
+					tcell.Style{}.Reverse(true),
+				),
 		)
-		modal.table.SetCell(index-skipped, 1, tview.NewTableCell(keybinding).
-			SetExpansion(1).
-			SetAlign(tview.AlignRight).
-			SetClickedFunc(clickedFunc).
-			SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
-			SetSelectedStyle(tcell.Style{}.
-				Foreground(theme.GetColor(theme.ThemeMenuItem)).
-				Background(theme.BackgroundColor(theme.ThemeMenuItem)),
-			),
+		modal.table.SetCell(
+			index-skipped, 1, tview.NewTableCell(keybinding).
+				SetExpansion(1).
+				SetAlign(tview.AlignRight).
+				SetClickedFunc(clickedFunc).
+				SetTextColor(theme.GetColor(theme.ThemeMenuItem)).
+				SetSelectedStyle(
+					tcell.Style{}.Reverse(true),
+				),
 		)
 	}
 
@@ -276,7 +277,7 @@ func (m *menuBarView) drawContextMenu(
 	menuID string,
 	selected func(table *tview.Table),
 	changed func(table *tview.Table, row, col int),
-	listContents func(table *tview.Table) (int, int),
+	listContents func(table *tview.Table) (int, int), invokeChange ...struct{},
 ) {
 	var changeEnabled bool
 
@@ -328,6 +329,11 @@ func (m *menuBarView) drawContextMenu(
 
 	modal.name = menuID
 	modal.table.Select(index, 0)
+
+	if invokeChange != nil && changed != nil {
+		changed(modal.table, index, 0)
+	}
+
 	m.drawSubMenu(x, y, width+20, menuID == menuDeviceName.String())
 }
 
@@ -359,8 +365,16 @@ func (m *menuBarView) drawSubMenu(x, y, width int, device bool) {
 }
 
 // setHeader appends the header text with the menu bar's regions.
-func (m *menuBarView) setHeader(header string) {
-	m.bar.SetText(header + "[-:-:-] " + theme.ColorWrap(theme.ThemeMenu, menuBarRegions))
+func (m *menuBarView) setHeader(header string, removeMenuRegions bool) {
+	var sb strings.Builder
+
+	sb.WriteString(header)
+	sb.WriteString("[-:-:-] ")
+	if !removeMenuRegions {
+		sb.WriteString(theme.ColorWrap(theme.ThemeMenu, menuBarRegions))
+	}
+
+	m.bar.SetText(sb.String())
 }
 
 // next switches between menus.
@@ -370,9 +384,9 @@ func (m *menuBarView) next() {
 		return
 	}
 
-	for _, region := range m.bar.GetRegionIDs() {
-		if highlighted[0] != region {
-			m.bar.Highlight(region)
+	for _, region := range m.bar.GetRegions(0, false) {
+		if highlighted[0] != region.ID {
+			m.bar.Highlight(region.ID)
 		}
 	}
 }

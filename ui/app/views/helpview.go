@@ -123,7 +123,7 @@ func (h *helpView) showStatusHelp(page string) {
 		groups[group] = helpItem
 	}
 
-	text := ""
+	var text strings.Builder
 	count := 0
 	for group, items := range groups {
 		var names, keys []string
@@ -148,11 +148,12 @@ func (h *helpView) showStatusHelp(page string) {
 		title := theme.ColorWrap(theme.ThemeText, group, "::bu")
 		helpKeys = theme.ColorWrap(theme.ThemeText, ": "+helpKeys)
 
-		text += title + helpKeys
+		text.WriteString(title)
+		text.WriteString(helpKeys)
 		count++
 	}
 
-	h.status.Help.SetText(text)
+	h.status.Help.SetText(text.String())
 }
 
 // showHelp displays a modal with the help items for all the screens.
@@ -174,10 +175,11 @@ func (h *helpView) showHelp() {
 	})
 
 	for title, helpItems := range h.topics {
-		helpModal.table.SetCell(row, 0, tview.NewTableCell("[::bu]"+title).
-			SetSelectable(false).
-			SetAlign(tview.AlignCenter).
-			SetTextColor(theme.GetColor(theme.ThemeText)),
+		helpModal.table.SetCell(
+			row, 0, tview.NewTableCell("[::bu]"+title).
+				SetSelectable(false).
+				SetAlign(tview.AlignCenter).
+				SetTextColor(theme.GetColor(theme.ThemeText)),
 		)
 
 		row++
@@ -191,24 +193,20 @@ func (h *helpView) showHelp() {
 
 			keybinding := strings.Join(names, "/")
 
-			helpModal.table.SetCell(row, 0, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, item.Description)).
-				SetExpansion(1).
-				SetAlign(tview.AlignLeft).
-				SetTextColor(theme.GetColor(theme.ThemeText)).
-				SetSelectedStyle(tcell.Style{}.
-					Foreground(theme.GetColor(theme.ThemeText)).
-					Background(theme.BackgroundColor(theme.ThemeText)),
-				),
+			helpModal.table.SetCell(
+				row, 0, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, item.Description)).
+					SetExpansion(1).
+					SetAlign(tview.AlignLeft).
+					SetTextColor(theme.GetColor(theme.ThemeText)).
+					SetSelectedStyle(tcell.Style{}.Reverse(true)),
 			)
 
-			helpModal.table.SetCell(row, 1, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, keybinding)).
-				SetExpansion(0).
-				SetAlign(tview.AlignLeft).
-				SetTextColor(theme.GetColor(theme.ThemeText)).
-				SetSelectedStyle(tcell.Style{}.
-					Foreground(theme.GetColor(theme.ThemeText)).
-					Background(theme.BackgroundColor(theme.ThemeText)),
-				),
+			helpModal.table.SetCell(
+				row, 1, tview.NewTableCell(theme.ColorWrap(theme.ThemeText, keybinding)).
+					SetExpansion(0).
+					SetAlign(tview.AlignLeft).
+					SetTextColor(theme.GetColor(theme.ThemeText)).
+					SetSelectedStyle(tcell.Style{}.Reverse(true)),
 			)
 
 			row++

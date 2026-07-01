@@ -70,6 +70,11 @@ func (d *deviceView) SetRootView(v *Views) {
 	d.Views = v
 }
 
+// clear clears the devices list.
+func (d *deviceView) clear() {
+	d.table.Clear()
+}
+
 // list lists the devices belonging to the selected adapter within the devices view.
 func (d *deviceView) list() {
 	devices, err := d.adapter.currentSession().Devices()
@@ -150,9 +155,9 @@ func (d *deviceView) showDetailedInfo() {
 				SetAlign(tview.AlignLeft).
 				SetTextColor(theme.GetColor(theme.ThemeText)).
 				SetSelectedStyle(
-					tcell.Style{}.
+					tcell.StyleDefault.
 						Bold(true).
-						Underline(true),
+						Underline(true).Reverse(true),
 				),
 		)
 
@@ -160,7 +165,8 @@ func (d *deviceView) showDetailedInfo() {
 			i, 1, tview.NewTableCell(propValue).
 				SetExpansion(1).
 				SetAlign(tview.AlignLeft).
-				SetTextColor(theme.GetColor(theme.ThemeText)),
+				SetTextColor(theme.GetColor(theme.ThemeText)).
+				SetSelectedStyle(tcell.StyleDefault.Reverse(true)),
 		)
 	}
 
@@ -269,9 +275,7 @@ func (d *deviceView) setInfo(row int, device bluetooth.DeviceData) {
 			SetAttributes(tcell.AttrBold).
 			SetTextColor(theme.GetColor(nameColor)).
 			SetSelectedStyle(
-				tcell.Style{}.
-					Foreground(theme.GetColor(nameColor)).
-					Background(theme.BackgroundColor(nameColor)),
+				tcell.Style{}.Reverse(true),
 			),
 	)
 
@@ -340,6 +344,22 @@ func (d *deviceView) setPropertyInfo(row int, deviceEvent bluetooth.DeviceEventD
 
 	deviceNameCell := d.table.GetCell(row, 0)
 	if deviceNameCell != nil {
+		if isPartialUpdate {
+			currentName := deviceNameCell.Text
+
+			_, after, found := strings.Cut(currentName, " (")
+			if found {
+				var sb strings.Builder
+
+				name := getDeviceDisplayName(deviceEvent)
+				sb.WriteString(name)
+				sb.WriteString(" (")
+				sb.WriteString(after)
+
+				deviceNameCell.SetText(sb.String())
+			}
+		}
+
 		deviceNameCell.SetTextColor(theme.GetColor(nameColor))
 	}
 
@@ -386,13 +406,15 @@ func (d *deviceView) event() {
 
 		case ev := <-deviceSub.AddedEvents:
 			go d.app.QueueDraw(func() {
-				deviceRow := d.table.GetRowCount()
-
 				row, ok := d.getRowByAddress(ev.DeviceAddress)
 				if ok {
-					deviceRow = row
+					d.setInfo(row, ev)
+				} else {
+					if v := d.adapter.getAdapter(); v != nil && v.AdapterAddress == ev.AdapterAddress() {
+						deviceRow := d.table.GetRowCount()
+						d.setInfo(deviceRow, ev)
+					}
 				}
-				d.setInfo(deviceRow, ev)
 			})
 
 		case ev := <-deviceSub.UpdatedEvents:
