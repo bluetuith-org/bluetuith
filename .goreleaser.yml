@@ -29,7 +29,27 @@ builds:
       - 6
       - 7
 
+    overrides:
+      - goos: windows
+        goarch: arm64
+        tags:
+          - libhbluetooth
+      - goos: windows
+        goarch: amd64
+        tags:
+          - libhbluetooth
+      - goos: darwin
+        goarch: arm64
+        tags:
+          - libhbluetooth
+      - goos: darwin
+        goarch: amd64
+        tags:
+          - libhbluetooth
+
     ignore:
+      - goos: windows
+        goarch: 386
       - goos: windows
         goarch: arm
       - goos: darwin
@@ -51,7 +71,7 @@ archives:
       - LICENSE
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 changelog:
   disable: true
